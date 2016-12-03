@@ -30,6 +30,7 @@
 #define PARENCELL_H
 
 #include "MathCell.h"
+#include "TextCell.h"
 #include "Setup.h"
 
 /*! The class that represents parenthesis that are wrapped around text
@@ -71,13 +72,12 @@ public:
   wxString ToXML();
   void SetParent(MathCell *parent);
 protected:
-  MathCell *m_innerCell, *m_open, *m_close;
+  MathCell *m_innerCell;
+  TextCell *m_open, *m_close;
   MathCell *m_last1;
   bool m_print;
-#ifdef __WXMSW__
   int m_charWidth, m_charHeight;
   int m_charWidth1, m_charHeight1;
-#endif
   int m_parenFontSize, m_signTop, m_signSize, m_signWidth;
   enum parenthesisStyle
   {
