@@ -165,7 +165,7 @@ void ParenCell::RecalculateWidths(int fontsize)
     else
     {
       // Calculate how many middle pieces we need in order to reach the parenthesis height we want.
-      m_parenMidNum = (height - m_parenTopHeight - m_parenBottomHeight + m_parenMidHeight - 1) / m_parenMidHeight;
+      m_parenMidNum = (height - m_parenTopHeight - m_parenBottomHeight + m_parenMidHeight / 2 - 1) / m_parenMidHeight;
 
       m_parenHeight  = m_parenTopHeight - m_parenBottomHeight + m_parenMidNum * m_parenMidHeight;
     }

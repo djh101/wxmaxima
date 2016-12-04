@@ -54,7 +54,7 @@ public:
   ~ParenCell();
 
   wxString Paren_Open(){return wxT("(");}
-  wxString Paren_Open_Top(){return wxT("\x2398");}
+  wxString Paren_Open_Top(){return wxT("\x239b");}
   wxString Paren_Open_Mid(){return wxT("\x239c");}
   wxString Paren_Open_Bottom(){return wxT("\x239d");}
   wxString Paren_Close(){return wxT(")");}
