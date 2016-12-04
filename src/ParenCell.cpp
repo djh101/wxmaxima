@@ -182,7 +182,10 @@ void ParenCell::RecalculateHeight(int fontsize)
 {
   Configuration *configuration = Configuration::Get();
   double scale = configuration->GetScale();
-  m_height = m_parenHeight;
+
+
+  // The "fontsize * scale" part makes sure we leave some vertical space.
+  m_height = m_parenHeight + fontsize * scale / 3;
   m_center = m_parenHeight/2;
   std::cerr<<m_center<<"\n";
   m_open->RecalculateHeightList(fontsize);
