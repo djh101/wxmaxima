@@ -52,6 +52,16 @@ class ParenCell : public MathCell
 public:
   ParenCell();
   ~ParenCell();
+
+  wxString Paren_Open(){return wxT("(");}
+  wxString Paren_Open_Top(){return wxT("\x2398");}
+  wxString Paren_Open_Mid(){return wxT("\x239c");}
+  wxString Paren_Open_Bottom(){return wxT("\x239d");}
+  wxString Paren_Close(){return wxT(")");}
+  wxString Paren_Close_Top(){return wxT("\x239e");}
+  wxString Paren_Close_Mid(){return wxT("\x239f");}
+  wxString Paren_Close_Bottom(){return wxT("\x23a0");}
+  
   void Destroy();
   MathCell* Copy();
   void SetInner(MathCell *inner, int style);
@@ -78,12 +88,12 @@ protected:
   bool m_print;
   int m_charWidth, m_charHeight;
   int m_charWidth1, m_charHeight1;
-  int m_parenFontSize, m_signTop, m_signSize, m_signWidth;
+  int m_parenTopHeight, m_parenBottomHeight, m_parenHeight, m_parenMidNum,
+    m_parenMidHeight, m_parenWidth;
   enum parenthesisStyle
   {
-    PARENTHESIS_NORMAL = 0,   //!< An ordinary parenthesis sign
-    PARENTHESIS_BIG = 1    ,  //!< A "big parenthesis" sign
-    PARENTHESIS_ASSEMBLED = 2 //!< Assemble a "Parenthesis top half sign", a bot half sign and a
+    normal = 0,   //!< An ordinary parenthesis sign
+    assembled = 1 //!< Assemble a "Parenthesis top half sign", a bot half sign and (if needed) a
                               //   vertical line.
   };
 
