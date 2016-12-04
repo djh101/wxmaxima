@@ -210,6 +210,8 @@ void ParenCell::Draw(wxPoint point, int fontsize)
                   point.x + m_parenWidth + m_innerCell->GetFullWidth(scale),
                   point.y - m_center + SCALE_PX(MC_TEXT_PADDING, scale)
         );
+      break;
+      
     case assembled:
 
       // Draw the left parenthesis
@@ -249,6 +251,38 @@ void ParenCell::Draw(wxPoint point, int fontsize)
                   point.y - m_center + SCALE_PX(MC_TEXT_PADDING, scale) + m_parenTopHeight +
                   m_parenMidNum * m_parenMidHeight
         );
+      break;
+      
+    case handdrawn:
+      SetPen();
+      // left
+      dc.DrawLine(point.x + SCALE_PX(5, scale),
+                  point.y - m_innerCell->GetMaxCenter() + SCALE_PX(1, scale),
+                  point.x + SCALE_PX(2, scale),
+                  point.y - m_innerCell->GetMaxCenter() + SCALE_PX(7, scale));
+      dc.DrawLine(point.x + SCALE_PX(2, scale),
+                  point.y - m_innerCell->GetMaxCenter() + SCALE_PX(7, scale),
+                  point.x + SCALE_PX(2, scale),
+                  point.y + m_innerCell->GetMaxDrop() - SCALE_PX(7, scale));
+      dc.DrawLine(point.x + SCALE_PX(2, scale),
+                  point.y + m_innerCell->GetMaxDrop() - SCALE_PX(7, scale),
+                  point.x + SCALE_PX(5, scale),
+                  point.y + m_innerCell->GetMaxDrop() - SCALE_PX(1, scale));
+      // right
+      dc.DrawLine(point.x + m_width - SCALE_PX(5, scale) - 1,
+                  point.y - m_innerCell->GetMaxCenter() + SCALE_PX(1, scale),
+                  point.x + m_width - SCALE_PX(2, scale) - 1,
+                  point.y - m_innerCell->GetMaxCenter() + SCALE_PX(7, scale));
+      dc.DrawLine(point.x + m_width - SCALE_PX(2, scale) - 1,
+                  point.y - m_innerCell->GetMaxCenter() + SCALE_PX(7, scale),
+                  point.x + m_width - SCALE_PX(2, scale) - 1,
+                  point.y + m_innerCell->GetMaxDrop() - SCALE_PX(7, scale));
+      dc.DrawLine(point.x + m_width - SCALE_PX(2, scale) - 1,
+                  point.y + m_innerCell->GetMaxDrop() - SCALE_PX(7, scale),
+                  point.x + m_width - SCALE_PX(5, scale) - 1,
+                  point.y + m_innerCell->GetMaxDrop() - SCALE_PX(1, scale));
+      UnsetPen();
+
     }
 
     wxPoint in(point);
