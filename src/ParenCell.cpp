@@ -167,7 +167,7 @@ void ParenCell::RecalculateWidths(int fontsize)
       // Calculate how many middle pieces we need in order to reach the parenthesis height we want.
       m_parenMidNum = (height - m_parenTopHeight - m_parenBottomHeight + m_parenMidHeight / 2 - 1) / m_parenMidHeight;
 
-      m_parenHeight  = m_parenTopHeight - m_parenBottomHeight + m_parenMidNum * m_parenMidHeight;
+      m_parenHeight  = m_parenTopHeight + m_parenBottomHeight + m_parenMidNum * m_parenMidHeight;
     }
   }
 
@@ -184,7 +184,7 @@ void ParenCell::RecalculateHeight(int fontsize)
   double scale = configuration->GetScale();
   m_height = m_parenHeight;
   m_center = m_parenHeight/2;
-
+  std::cerr<<m_center<<"\n";
   m_open->RecalculateHeightList(fontsize);
   m_close->RecalculateHeightList(fontsize);
 }
@@ -287,6 +287,8 @@ void ParenCell::Draw(wxPoint point, int fontsize)
 
     wxPoint in(point);
     in.x += m_parenWidth;
+    in.y += m_innerCell->GetMaxCenter();
+    in.y -= m_innerCell->GetMaxHeight() / 2;
     m_innerCell->DrawList(in, fontsize);
   }
 }
