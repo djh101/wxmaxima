@@ -53,15 +53,54 @@ public:
   ParenCell();
   ~ParenCell();
 
-  wxString Paren_Open(){return wxT("(");}
-  wxString Paren_Open_Top(){return wxT("\x239b");}
+  #ifdef __MSW__
+  //! The character that represents an opening parenthesis
+  wxString Paren_Open() { return wxT("("); }
+  //! The character that represents a large opening parenthesis
+  wxString Paren_Open_Large() { return wxT("("); }
+  //! The character that represents the top of an opening parenthesis
+  wxString Paren_Open_Top() { return wxT("\x239b"); }
+  //! The character that represents an opening parenthesis
+  wxString Paren_Open() { return wxT("("); }
+  //! The character that represents the top of an opening parenthesis
+  wxString Paren_Open_Top() { return wxT("\x239b"); }
+  //! The character that represents a middle part of an opening parenthesis
   wxString Paren_Open_Mid(){return wxT("\x239c");}
+  //! The character that represents the bottom of an opening parenthesis
   wxString Paren_Open_Bottom(){return wxT("\x239d");}
+  //! The character that represents an closing parenthesis
   wxString Paren_Close(){return wxT(")");}
+  //! The character that represents a large closing parenthesis
+  wxString Paren_Close_Large() { return wxT(")"); }
+  //! The character that represents the top of an closing parenthesis
   wxString Paren_Close_Top(){return wxT("\x239e");}
+  //! The character that represents a middle part of an closing parenthesis
   wxString Paren_Close_Mid(){return wxT("\x239f");}
+  //! The character that represents the bottom of an closing parenthesis
   wxString Paren_Close_Bottom(){return wxT("\x23a0");}
-  
+#else
+  //! The character that represents an opening parenthesis
+  wxString Paren_Open() { return wxT("("); }
+  //! The character that represents a large opening parenthesis
+  wxString Paren_Open_Large() { return wxT("\xB0"); }
+  //! The character that represents the top of an opening parenthesis
+  wxString Paren_Open_Top() { return wxT("\x30"); }
+//! The character that represents a middle part of an opening parenthesis
+  wxString Paren_Open_Mid() { return wxT("\x42"); }
+  //! The character that represents the bottom of an opening parenthesis
+  wxString Paren_Open_Bottom() { return wxT("\x40"); }
+  //! The character that represents a closing parenthesis
+  wxString Paren_Close() { return wxT(")"); }
+  //! The character that represents a large closing parenthesis
+  wxString Paren_Close_Large() { return wxT("\xD1"); }
+  //! The character that represents the top of an closing parenthesis
+  wxString Paren_Close_Top() { return wxT("\x31"); }
+  //! The character that represents a middle part of an closing parenthesis
+  wxString Paren_Close_Mid() { return wxT("\x43"); }
+  //! The character that represents the bottom of an closing parenthesis
+  wxString Paren_Close_Bottom() { return wxT("\x41"); }
+#endif
+
   void Destroy();
   MathCell* Copy();
   void SetInner(MathCell *inner, int style);
@@ -83,14 +122,15 @@ public:
   void SetFont(int fontsize);
   void SetParent(MathCell *parent);
 private:
+  //! The argument of the parenthesis
   MathCell *m_innerCell;
-  TextCell *m_open, *m_close;
+  //! The opening parenthesis for the case that this cell is broken into lines
+  TextCell *m_open;
+  //! The closing parenthesis for the case that this cell is broken into lines
+  TextCell *m_close;
+  //! The last cell of the argument of the parenthesis.
   MathCell *m_last1;
   bool m_print;
-  int m_charWidth;
-  int m_charHeight;
-  int m_charWidth1;
-  int m_charHeight1;
   /*! The height of the top part of the parenthesis.
 
     Valid if the parenthesis is assembled out of more than 1 characters.
@@ -115,9 +155,12 @@ private:
   enum parenthesisStyle
   {
     normal = 0,   //!< An ordinary parenthesis sign
-    assembled = 1,//!< Assemble a "Parenthesis top half sign", a bot half sign and (if needed) a
+	subSuperScript = 1,   //!< The content is slightly bigger than the average parenthesis sign, but using 
+                  // a big parenthesis for a variable with a subscript is a little bit too big an unicode
+				  // parenthesis.
+    assembled = 2,//!< Assemble a "Parenthesis top half sign", a bot half sign and (if needed) a
                               //   vertical line.
-    handdrawn = 2 //!< No suitable font => Draw the parenthesis by hand.
+    handdrawn = 3 //!< No suitable font => Draw the parenthesis by hand.
   };
 
   /* How to create a big parenthesis sign?
