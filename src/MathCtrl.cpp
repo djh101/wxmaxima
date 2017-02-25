@@ -278,22 +278,14 @@ void MathCtrl::OnPaint(wxPaintEvent& event)
       // if groups are selected, that is.
       if (m_selectionStart->GetType() == MC_TYPE_GROUP) 
       {
-        while (tmp != NULL)
-        {
-          wxRect rect = tmp->GetRect();
-          rect=wxRect( 3, rect.GetTop() - 2, MC_GROUP_LEFT_INDENT, rect.GetHeight() + 5);
-          // TODO globally define x coordinates of the left GC brackets
-          if(MathCell::InUpdateRegion(rect))
-            dcm.DrawRectangle(MathCell::CropToUpdateRegion(rect));
-
-          if (tmp == m_selectionEnd)
-	    break;
-          tmp = tmp->m_next;
-        }
-
+        GroupCell::SetSelectionRange_px(
+          dynamic_cast<GroupCell *>(m_selectionStart)->m_currentPoint.y,
+          dynamic_cast<GroupCell *>(m_selectionEnd)->m_currentPoint.y
+          );
       }
       else
       {  // We have a selection of output
+        GroupCell::SetSelectionRange_px(-1,-1);
         while (tmp != NULL)
         {
           if (!tmp->m_isBroken && !tmp->m_isHidden && m_activeCell != tmp)
@@ -931,10 +923,7 @@ void MathCtrl::OnMouseRightDown(wxMouseEvent& event)
     m_leftDown = false;
     m_clickType = CLICK_TYPE_NONE;
     if(HasCapture())
-    {
       ReleaseMouse();
-      this->Disconnect(wxEVT_MOTION,wxMouseEventHandler(MathCtrl::OnMouseMotion));
-    }
   }
   
   // construct a menu appropriate to what we have
@@ -1213,7 +1202,6 @@ void MathCtrl::OnMouseLeftDown(wxMouseEvent& event)
   // During drag-and-drop We want to track the mouse position.
   if(event.LeftDown())
   {
-    this->Connect(wxEVT_MOTION,wxMouseEventHandler(MathCtrl::OnMouseMotion),NULL,this);
     if(!HasCapture())
       CaptureMouse();
     m_leftDown = true;
@@ -1354,16 +1342,12 @@ GroupCell *MathCtrl::FirstVisibleGC()
 
 void MathCtrl::OnMouseLeftUp(wxMouseEvent& event)
 {
-  this->Disconnect(wxEVT_MOTION,wxMouseEventHandler(MathCtrl::OnMouseMotion));
   m_cellSearchStartedIn = NULL;
   m_indexSearchStartedAt = -1;
 
   // No more track the mouse when it is outside the worksheet
   if(HasCapture())
-  {
     ReleaseMouse();
-    this->Disconnect(wxEVT_MOTION,wxMouseEventHandler(MathCtrl::OnMouseMotion));
-  }
   
   AnimationRunning(false);
   m_leftDown = false;
@@ -5533,10 +5517,7 @@ void MathCtrl::OnDoubleClick(wxMouseEvent &event)
 
   // No more track the mouse when it is outside the worksheet
   if(HasCapture())
-  {
     ReleaseMouse();
-    this->Disconnect(wxEVT_MOTION,wxMouseEventHandler(MathCtrl::OnMouseMotion));
-  }
 
   if (m_activeCell != NULL) {
     m_activeCell->SelectWordUnderCaret();
@@ -6785,10 +6766,7 @@ void MathCtrl::OnMouseMiddleUp(wxMouseEvent& event)
     PasteFromClipboard(true);
   m_clickType = CLICK_TYPE_NONE;
   if(HasCapture())
-  {
     ReleaseMouse();
-    this->Disconnect(wxEVT_MOTION,wxMouseEventHandler(MathCtrl::OnMouseMotion));
-  }
 #endif
 }
 
@@ -7509,6 +7487,7 @@ BEGIN_EVENT_TABLE(MathCtrl, wxScrolledCanvas)
   EVT_LEFT_DOWN(MathCtrl::OnMouseLeftDown)
   EVT_RIGHT_DOWN(MathCtrl::OnMouseRightDown)
   EVT_LEFT_DCLICK(MathCtrl::OnDoubleClick)
+  EVT_MOTION(MathCtrl::OnMouseMotion)
   EVT_ENTER_WINDOW(MathCtrl::OnMouseEnter)
   EVT_LEAVE_WINDOW(MathCtrl::OnMouseExit)
   EVT_TIMER(TIMER_ID, MathCtrl::OnTimer)
