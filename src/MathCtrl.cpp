@@ -69,6 +69,7 @@ wxScrolledCanvas(
 #endif
   )
 {
+  m_groupCellUnderPointerRect = wxRect(0,0,0,0);
   m_dc = new wxClientDC(this);
   m_configuration = new Configuration(*m_dc);
   m_configuration->ReadConfig();
@@ -278,10 +279,13 @@ void MathCtrl::OnPaint(wxPaintEvent& event)
       // if groups are selected, that is.
       if (m_selectionStart->GetType() == MC_TYPE_GROUP) 
       {
-        GroupCell::SetSelectionRange_px(
-          dynamic_cast<GroupCell *>(m_selectionStart)->m_currentPoint.y,
-          dynamic_cast<GroupCell *>(m_selectionEnd)->m_currentPoint.y
-          );
+        if(m_selectionEnd != NULL)
+          GroupCell::SetSelectionRange_px(
+            dynamic_cast<GroupCell *>(m_selectionStart)->m_currentPoint.y,
+            dynamic_cast<GroupCell *>(m_selectionEnd)->m_currentPoint.y
+            );
+        else
+          GroupCell::SetSelectionRange_px(-1,-1);
       }
       else
       {  // We have a selection of output
@@ -1433,6 +1437,31 @@ void MathCtrl::OnMouseMotion(wxMouseEvent& event)
     m_mousePoint.y = event.GetY();
   }
   ClickNDrag(m_down, m_up);
+
+  if(Configuration::Get()->HideBrackets())
+  {
+    if(
+      (event.GetY()<m_groupCellUnderPointerRect.GetTop())||
+      (event.GetY()>m_groupCellUnderPointerRect.GetBottom())
+      )
+    {
+      // find out the group cell the selection begins in
+      GroupCell *tmp = m_tree;
+      wxRect rect;
+ 
+      while (tmp != NULL) {
+        rect = tmp->GetRect();
+        if (event.GetY() <= rect.GetBottom()) {
+          m_selectionStart = tmp;
+          break;
+        }
+        tmp = dynamic_cast<GroupCell*>(tmp->m_next);
+      }
+      GroupCell::CellUnderPointer(tmp);
+      if(tmp != NULL)
+        m_groupCellUnderPointerRect = tmp->GetRect();
+    }
+  } 
 }
 
 

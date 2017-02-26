@@ -688,6 +688,19 @@ void GroupCell::Draw(wxPoint point, int fontsize)
   }
 }
 
+void GroupCell::CellUnderPointer(GroupCell *cell)
+{
+  if(m_groupCellUnderPointer != cell)
+  {
+    GroupCell *tmp = m_groupCellUnderPointer;
+    m_groupCellUnderPointer = cell;
+    if(tmp != NULL)
+      tmp->DrawBracket();
+    if(m_groupCellUnderPointer != NULL)
+      m_groupCellUnderPointer->DrawBracket();
+  }
+}
+
 void GroupCell::DrawBracket()
 {
   Configuration *configuration = Configuration::Get();

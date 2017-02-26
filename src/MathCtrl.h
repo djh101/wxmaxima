@@ -78,7 +78,7 @@ class MathCtrl: public wxScrolledCanvas
 {
 private:
   //! The rectangle the groupcell under the pointer is in
-  GroupCell *m_groupCellUnderPointerRect;
+  wxRect m_groupCellUnderPointerRect;
   /*! The size of a scroll step
     
     Defines the size of a 

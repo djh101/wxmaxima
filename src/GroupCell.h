@@ -63,7 +63,7 @@ class GroupCell: public MathCell
 public:
   GroupCell(int groupType, wxString initString = wxEmptyString);
   ~GroupCell();
-  static void CellUnderPointer(GroupCell *cell) {m_groupCellUnderPointer = cell;}
+  static void CellUnderPointer(GroupCell *cell);
   MathCell* Copy();
   void Destroy();
   //! Set the y position of the selection start and end
