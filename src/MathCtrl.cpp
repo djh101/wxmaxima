@@ -1420,9 +1420,12 @@ void MathCtrl::OnMouseMotion(wxMouseEvent& event)
 {
   if(Configuration::Get()->HideBrackets())
   {
+
+    int x,y;
+    CalcUnscrolledPosition(event.GetX(), event.GetY(), &x, &y);
     if(
-      (event.GetY()<m_groupCellUnderPointerRect.GetTop())||
-      (event.GetY()>m_groupCellUnderPointerRect.GetBottom())
+      (y<m_groupCellUnderPointerRect.GetTop())||
+      (y>m_groupCellUnderPointerRect.GetBottom())
       )
     {
       // find out the group cell the selection begins in
@@ -1431,7 +1434,7 @@ void MathCtrl::OnMouseMotion(wxMouseEvent& event)
  
       while (tmp != NULL) {
         rect = tmp->GetRect();
-        if (event.GetY() <= rect.GetBottom())
+        if (y <= rect.GetBottom())
         {
           m_selectionStart = tmp;
           break;
