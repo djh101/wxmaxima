@@ -277,17 +277,7 @@ void MathCtrl::OnPaint(wxPaintEvent& event)
 
       // Draw the marker that tells us which groups are selected -
       // if groups are selected, that is.
-      if (m_selectionStart->GetType() == MC_TYPE_GROUP) 
-      {
-        if(m_selectionEnd != NULL)
-          GroupCell::SetSelectionRange_px(
-            dynamic_cast<GroupCell *>(m_selectionStart)->m_currentPoint.y,
-            dynamic_cast<GroupCell *>(m_selectionEnd)->m_currentPoint.y
-            );
-        else
-          GroupCell::SetSelectionRange_px(-1,-1);
-      }
-      else
+      if (m_selectionStart->GetType() != MC_TYPE_GROUP) 
       {  // We have a selection of output
         GroupCell::SetSelectionRange_px(-1,-1);
         while (tmp != NULL)
@@ -1428,16 +1418,6 @@ void MathCtrl::OnMouseWheel(wxMouseEvent& event) {
 
 void MathCtrl::OnMouseMotion(wxMouseEvent& event)
 {
-  if (m_tree == NULL || !m_leftDown)
-    return;
-  m_mouseDrag = true;
-  CalcUnscrolledPosition(event.GetX(), event.GetY(), &m_up.x, &m_up.y);
-  if (m_mouseOutside) {
-     m_mousePoint.x = event.GetX();
-    m_mousePoint.y = event.GetY();
-  }
-  ClickNDrag(m_down, m_up);
-
   if(Configuration::Get()->HideBrackets())
   {
     if(
@@ -1451,7 +1431,8 @@ void MathCtrl::OnMouseMotion(wxMouseEvent& event)
  
       while (tmp != NULL) {
         rect = tmp->GetRect();
-        if (event.GetY() <= rect.GetBottom()) {
+        if (event.GetY() <= rect.GetBottom())
+        {
           m_selectionStart = tmp;
           break;
         }
@@ -1460,8 +1441,19 @@ void MathCtrl::OnMouseMotion(wxMouseEvent& event)
       GroupCell::CellUnderPointer(tmp);
       if(tmp != NULL)
         m_groupCellUnderPointerRect = tmp->GetRect();
+      RequestRedraw();
     }
   } 
+
+  if (m_tree == NULL || !m_leftDown)
+    return;
+  m_mouseDrag = true;
+  CalcUnscrolledPosition(event.GetX(), event.GetY(), &m_up.x, &m_up.y);
+  if (m_mouseOutside) {
+     m_mousePoint.x = event.GetX();
+    m_mousePoint.y = event.GetY();
+  }
+  ClickNDrag(m_down, m_up);
 }
 
 
@@ -1524,6 +1516,15 @@ void MathCtrl::SelectGroupCells(wxPoint down, wxPoint up)
     m_hCaretPositionStart = dynamic_cast<GroupCell*>(m_selectionEnd);
     m_hCaretPositionEnd   = dynamic_cast<GroupCell*>(m_selectionStart);
   }
+  
+  if((m_selectionStart != NULL)&&(m_selectionEnd != NULL))
+    GroupCell::SetSelectionRange_px(
+      dynamic_cast<GroupCell *>(m_selectionStart)->m_currentPoint.y,
+      dynamic_cast<GroupCell *>(m_selectionEnd)->m_currentPoint.y
+      );
+  else
+    if((m_selectionStart != NULL)&&(m_selectionEnd != NULL))
+      GroupCell::SetSelectionRange_px(-1,-1);
 }
 
 void MathCtrl::ClickNDrag(wxPoint down, wxPoint up)

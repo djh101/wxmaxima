@@ -705,6 +705,10 @@ void GroupCell::DrawBracket()
 {
   Configuration *configuration = Configuration::Get();
   bool drawBracket = !configuration->HideBrackets();
+
+  if(this == m_groupCellUnderPointer)
+    drawBracket = true;
+
   wxDC& dc = configuration->GetDC();
 
   // Mark this GroupCell as selected if it is selected. Else clear the space we
@@ -730,10 +734,7 @@ void GroupCell::DrawBracket()
   rect=wxRect( 3, rect.GetTop() - 2, MC_GROUP_LEFT_INDENT, rect.GetHeight() + 5);
   if(MathCell::InUpdateRegion(rect))
     dc.DrawRectangle(MathCell::CropToUpdateRegion(rect));
-  
-  
-  if(this == m_groupCellUnderPointer)
-    drawBracket = true;
+
   //
   // Mark groupcells currently in queue.
   //
@@ -766,7 +767,8 @@ void GroupCell::DrawBracket()
     dc.SetBrush( *(wxTheBrushList->FindOrCreateBrush(configuration->GetColor(TS_CELL_BRACKET)))); //highlight c.
   }
   
-  if ((!m_hide) && (!m_hiddenTree)) {
+  if ((!m_hide) && (!m_hiddenTree))
+  {
     dc.SetBrush(*wxTRANSPARENT_BRUSH);
   }
 
