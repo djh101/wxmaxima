@@ -1435,10 +1435,7 @@ void MathCtrl::OnMouseMotion(wxMouseEvent& event)
       while (tmp != NULL) {
         rect = tmp->GetRect();
         if (y <= rect.GetBottom())
-        {
-          m_selectionStart = tmp;
           break;
-        }
         tmp = dynamic_cast<GroupCell*>(tmp->m_next);
       }
       GroupCell::CellUnderPointer(tmp);
