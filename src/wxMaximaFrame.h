@@ -297,6 +297,26 @@ public:
     mac_newId,
     mac_openId,
     mac_closeId,
+    menu_list_create_from_elements,
+    menu_list_create_from_rule,
+    menu_list_create_from_list,
+    menu_list_actual_values_storage,
+    menu_list_sort,
+    menu_list_length,
+    menu_list_push,
+    menu_list_pop,
+    menu_list_reverse,
+    menu_list_first,
+    menu_list_last,
+    menu_list_nth,
+    menu_list_map,
+    menu_list_use_actual_values,
+    menu_list_as_function_arguments,
+    menu_list_do_for_each_element,
+    menu_list_remove_duplicates,
+    menu_list_remove_element,
+    menu_list_append,
+    menu_list_interleave,
     menu_recent_documents,
     menu_recent_document_0,
     menu_recent_document_1,
@@ -521,6 +541,8 @@ protected:
   wxMenu *m_CalculusMenu;
   //! The plot menu
   wxMenu *m_PlotMenu;
+  //! The list menu
+  wxMenu *m_listMenu;
   //! The numeric menu
   wxMenu *m_NumericMenu;
   //! The help menu

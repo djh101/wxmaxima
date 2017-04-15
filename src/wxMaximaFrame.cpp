@@ -915,6 +915,27 @@ void wxMaximaFrame::SetupMenu()
                          _("Setup modulus computation"), wxITEM_NORMAL);
   m_MenuBar->Append(m_SimplifyMenu, _("&Simplify"));
 
+  // List menu
+  m_listMenu = new wxMenu;
+  wxMenu *listappendSub = new wxMenu;
+  listappendSub->Append(menu_list_create_from_elements, _("from elements"),
+                        _("Create a list from comma-separated elements"),
+                        wxITEM_NORMAL);
+  listappendSub->Append(menu_list_create_from_rule, _("from a rule"),
+                        _("Generate list elements using a rule"),
+                        wxITEM_NORMAL);
+  listappendSub->Append(menu_list_create_from_rule, _("from a list"),
+                        _("Generate a new list using a lists' elements"),
+                        wxITEM_NORMAL);
+  listappendSub->Append(menu_list_actual_values_storage, _("as storage for actual values"),
+                        _("Generate a storage for variable values that can be introduced into equations at any time"),
+                        wxITEM_NORMAL);
+  m_listMenu->Append(wxNewId(), _("Create list"),
+                     listappendSub,
+                     _("Create a list"));
+  m_listMenu->Append(wxNewId(), _("Sort"));
+  m_MenuBar->Append(m_listMenu, _("&List"));
+  
   // Plot menu
   m_PlotMenu = new wxMenu;
   m_PlotMenu->Append(gp_plot2, _("Plot &2d..."),

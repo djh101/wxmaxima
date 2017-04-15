@@ -4491,6 +4491,55 @@ void wxMaxima::AlgebraMenu(wxCommandEvent &event)
   }
 }
 
+void wxMaxima::ListMenu(wxCommandEvent &event)
+{
+  wxString expr = GetDefaultEntry();
+  wxString cmd;
+  switch (event.GetId())
+  {
+  case menu_list_create_from_elements:
+    break;
+  case menu_list_create_from_rule:
+    break;
+  case menu_list_create_from_list:
+    break;
+  case menu_list_actual_values_storage:
+    break;
+  case menu_list_sort:
+    break;
+  case menu_list_length:
+    break;
+  case menu_list_push:
+    break;
+  case menu_list_pop:
+    break;
+  case menu_list_reverse:
+    break;
+  case menu_list_first:
+    break;
+  case menu_list_last:
+    break;
+  case menu_list_nth:
+    break;
+  case menu_list_map:
+    break;
+  case menu_list_use_actual_values:
+    break;
+  case menu_list_as_function_arguments:
+    break;
+  case menu_list_do_for_each_element:
+    break;
+  case menu_list_remove_duplicates:
+    break;
+  case menu_list_remove_element:
+    break;
+  case menu_list_append:
+    break;
+  case menu_list_interleave:
+    break;
+  }
+}
+
 void wxMaxima::SimplifyMenu(wxCommandEvent &event)
 {
   wxString expr = GetDefaultEntry();
@@ -7291,6 +7340,26 @@ EVT_UPDATE_UI(menu_show_toolbar, wxMaxima::UpdateMenus)
                 EVT_MENU(menu_evaluate_all_visible, wxMaxima::MaximaMenu)
                 EVT_MENU(menu_evaluate_all, wxMaxima::MaximaMenu)
                 EVT_MENU(ToolBar::tb_evaltillhere, wxMaxima::MaximaMenu)
+                EVT_MENU(menu_list_create_from_elements,wxMaxima::ListMenu)
+                EVT_MENU(menu_list_create_from_rule,wxMaxima::ListMenu)
+                EVT_MENU(menu_list_create_from_list,wxMaxima::ListMenu)
+                EVT_MENU(menu_list_actual_values_storage,wxMaxima::ListMenu)
+                EVT_MENU(menu_list_sort,wxMaxima::ListMenu)
+                EVT_MENU(menu_list_length,wxMaxima::ListMenu)
+                EVT_MENU(menu_list_push,wxMaxima::ListMenu)
+                EVT_MENU(menu_list_pop,wxMaxima::ListMenu)
+                EVT_MENU(menu_list_reverse,wxMaxima::ListMenu)
+                EVT_MENU(menu_list_first,wxMaxima::ListMenu)
+                EVT_MENU(menu_list_last,wxMaxima::ListMenu)
+                EVT_MENU(menu_list_nth,wxMaxima::ListMenu)
+                EVT_MENU(menu_list_map,wxMaxima::ListMenu)
+                EVT_MENU(menu_list_use_actual_values,wxMaxima::ListMenu)
+                EVT_MENU(menu_list_as_function_arguments,wxMaxima::ListMenu)
+                EVT_MENU(menu_list_do_for_each_element,wxMaxima::ListMenu)
+                EVT_MENU(menu_list_remove_duplicates,wxMaxima::ListMenu)
+                EVT_MENU(menu_list_remove_element,wxMaxima::ListMenu)
+                EVT_MENU(menu_list_append,wxMaxima::ListMenu)
+                EVT_MENU(menu_list_interleave,wxMaxima::ListMenu)
                 EVT_IDLE(wxMaxima::OnIdle)
                 EVT_MENU(menu_remove_output, wxMaxima::EditMenu)
                 EVT_MENU_RANGE(menu_recent_document_0, menu_recent_document_29, wxMaxima::OnRecentDocument)
