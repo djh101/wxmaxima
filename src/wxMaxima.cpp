@@ -4099,6 +4099,17 @@ void wxMaxima::AlgebraMenu(wxCommandEvent &event)
   }
 }
 
+void wxMaxima::ListMenu(wxCommandEvent &event)
+{
+  wxString expr = GetDefaultEntry();
+  wxString cmd;
+  switch (event.GetId())
+  {
+  case menu_listCreate:
+    break;
+  }
+}
+
 void wxMaxima::SimplifyMenu(wxCommandEvent &event)
 {
   wxString expr = GetDefaultEntry();
@@ -6649,6 +6660,7 @@ EVT_UPDATE_UI(menu_show_toolbar, wxMaxima::UpdateMenus)
                 EVT_MENU(menu_evaluate_all_visible, wxMaxima::MaximaMenu)
                 EVT_MENU(menu_evaluate_all, wxMaxima::MaximaMenu)
                 EVT_MENU(ToolBar::tb_evaltillhere, wxMaxima::MaximaMenu)
+                EVT_MENU(menu_listCreate,wxMaxima::ListMenu)
                 EVT_IDLE(wxMaxima::OnIdle)
                 EVT_MENU(menu_remove_output, wxMaxima::EditMenu)
                 EVT_MENU_RANGE(menu_recent_document_0, menu_recent_document_29, wxMaxima::OnRecentDocument)

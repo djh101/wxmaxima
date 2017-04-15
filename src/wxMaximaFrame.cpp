@@ -888,6 +888,13 @@ void wxMaximaFrame::SetupMenu()
                          _("Setup modulus computation"), wxITEM_NORMAL);
   m_MenuBar->Append(m_SimplifyMenu, _("&Simplify"));
 
+  // List menu
+  m_listMenu = new wxMenu;
+  m_listMenu->Append(menu_listCreate, _("Create list..."),
+                     _("Create a list"),
+                     wxITEM_NORMAL);
+  m_MenuBar->Append(m_listMenu, _("&List"));
+
   // Plot menu
   m_PlotMenu = new wxMenu;
   m_PlotMenu->Append(gp_plot2, _("Plot &2d..."),

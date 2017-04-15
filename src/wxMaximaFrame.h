@@ -195,6 +195,7 @@ public:
     menu_imagpart,
     menu_subst,
     menu_triggerEvaluation,
+    menu_listCreate,
     button_factor_id,
     button_solve,
     button_solve_ode,
@@ -477,6 +478,8 @@ protected:
   wxMenu *m_CalculusMenu;
   //! The plot menu
   wxMenu *m_PlotMenu;
+  //! The list menu
+  wxMenu *m_listMenu;
   //! The numeric menu
   wxMenu *m_NumericMenu;
   //! The help menu
