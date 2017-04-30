@@ -521,9 +521,6 @@ private:
   /*! Divide a string into tokens
 
     Used when styling text.
-
-    \todo Use iterators in order to iterate over strings: They are much faster than
-    the current method.
    */
   wxArrayString StringToTokens(wxString string);
 
