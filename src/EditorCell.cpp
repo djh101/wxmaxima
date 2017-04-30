@@ -3547,7 +3547,6 @@ void EditorCell::StyleTextCode()
   if(tokens.GetCount() > 0)
     for (size_t i = 0; i < tokens.GetCount(); i++)
     {
-      std::cerr<<"token=\""<<tokens[i]<<"\"\n";
       pos += token.Length();
       token = tokens[i];
       if (token.Length() < 1)
