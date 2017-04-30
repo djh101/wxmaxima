@@ -3625,8 +3625,6 @@ void EditorCell::StyleTextCode()
       if (token.StartsWith(wxT("\"")))
       {
         m_styledText.push_back(StyledText(TS_CODE_STRING, token));
-        if (i + 1 < tokens.GetCount())
-          i++;
         HandleSoftLineBreaks_Code(lastSpace, lineWidth, token, pos, m_text, lastSpacePos, spaceIsIndentation,
                                   indentationPixels);
         continue;
