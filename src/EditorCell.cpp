@@ -3287,10 +3287,23 @@ wxArrayString EditorCell::StringToTokens(wxString string)
   size_t pos = 0;
   wxArrayString retval;
   wxString token;
-
-  while (pos < size)
+  
+  wxString::const_iterator it = m_text.begin();
+  
+  while (it != m_text.end())
   {
-    wxChar Ch = string.GetChar(pos);
+    // Determine the current char and the one that will follow it
+    wxChar Ch = *it;
+    wxString::const_iterator it2(it);
+    it2++;
+    wxChar nextChar;
+
+    if(it2 != m_text.end())
+      nextChar = *it2;
+    else
+      nextChar = wxT(' ');
+
+    std::cerr<<"ch="<<wxString(*it)<<", next="<<wxString(nextChar)<<"\n";
 
     // Check for newline characters (hard+soft line break)
     if ((Ch == wxT('\n')) || (Ch == wxT('\r')))
@@ -3301,7 +3314,7 @@ wxArrayString EditorCell::StringToTokens(wxString string)
         token = wxEmptyString;
       }
       retval.Add(wxT("\nd"));
-      pos++;
+      it++;pos++;
     }
       // A minus and a plus are special tokens as they can be both
       // operators or part of a number.
@@ -3315,21 +3328,24 @@ wxArrayString EditorCell::StringToTokens(wxString string)
         retval.Add(token + wxT("d"));
       token = wxString(Ch);
       retval.Add(token + wxT("d"));
-      pos++;
+      it++;pos++;
       token = wxEmptyString;
     }
       // Check for comments
-    else if ((string.Length() > pos + 1) &&
-             ((Ch == '/' && ((string.GetChar(pos + 1) == '*') || (string.GetChar(pos + 1) == wxT('\xB7')))) ||
-              (((Ch == wxT('*')) || (Ch == wxT('\xB7'))) && ((string.GetChar(pos + 1) == wxT('/'))))))
+    else if (((Ch == '/') && ((nextChar == wxT('*')) || (nextChar == wxT('\xB7')))) ||
+             (((Ch == wxT('*')) || (Ch == wxT('\xB7'))) && ((nextChar == wxT('/')))))
     {
       if (token != wxEmptyString)
       {
         retval.Add(token + wxT("d"));
         token = wxEmptyString;
       }
-      retval.Add(string.SubString(pos, pos + 1) + wxT("d"));
-      pos = pos + 2;
+      retval.Add(wxString(Ch) + nextChar + wxT("d"));
+      ++it;++pos;
+      if(it != m_text.end())
+      {
+        ++it;++pos;
+      }
     }
 
       // Find operators that starts at the current position
@@ -3340,7 +3356,8 @@ wxArrayString EditorCell::StringToTokens(wxString string)
         retval.Add(token + wxT("d"));
         token = wxEmptyString;
       }
-      retval.Add(wxString(string.GetChar(pos++)) + wxT("d"));
+      retval.Add(wxString(Ch) + wxT("d"));
+      ++it;++pos;      
     }
 
       // Find a keyword that starts at the current position
@@ -3352,19 +3369,19 @@ wxArrayString EditorCell::StringToTokens(wxString string)
         token = wxEmptyString;
       }
 
-      while ((pos < size) && IsAlphaNum(string.GetChar(pos)))
+      while ((it != m_text.end()) && IsAlphaNum(Ch))
       {
-        wxChar ch = string.GetChar(pos);
-        token += ch;
+        Ch = *it;
+        token += Ch;
 
-        if (ch == wxT('\\'))
+        if (Ch == wxT('\\'))
         {
-          pos++;
-          if (pos < size)
+          ++it;++pos;
+          if (it != m_text.end())
           {
-            ch = string.GetChar(pos);
-            if (ch != wxT('\n'))
-              token += string.GetChar(pos);
+            Ch = *it;
+            if (Ch != wxT('\n'))
+              token += Ch;
             else
             {
               retval.Add(token + wxT("d"));
@@ -3374,7 +3391,7 @@ wxArrayString EditorCell::StringToTokens(wxString string)
             }
           }
         }
-        pos++;
+        it++;pos++;
       }
 
       retval.Add(token + wxT("d"));
@@ -3390,15 +3407,15 @@ wxArrayString EditorCell::StringToTokens(wxString string)
         token = wxEmptyString;
       }
 
-      while ((pos < size) &&
-             (IsNum(string.GetChar(pos)) ||
-              ((string.GetChar(pos) >= wxT('a')) && (string.GetChar(pos) <= wxT('z'))) ||
-              ((string.GetChar(pos) >= wxT('A')) && (string.GetChar(pos) <= wxT('Z')))
+      while ((it != m_text.end()) &&
+             (IsNum(Ch) ||
+              ((Ch >= wxT('a')) && (Ch <= wxT('z'))) ||
+              ((Ch >= wxT('A')) && (Ch <= wxT('Z')))
              )
               )
       {
-        token += string.GetChar(pos);
-        pos++;
+        token += Ch;
+        it++;pos++;Ch = *it;
       }
 
       retval.Add(token + wxT("d"));
@@ -3407,19 +3424,22 @@ wxArrayString EditorCell::StringToTokens(wxString string)
       // Merge consecutive spaces into one single token
     else if (Ch == wxT(' '))
     {
-      while ((pos < size) &&
-             (string.GetChar(pos) == wxT(' '))
+      while ((it != m_text.end()) &&
+             (Ch == wxT(' '))
               )
       {
-        token += string.GetChar(pos);
-        pos++;
+        token += Ch;
+        it++;pos++;Ch = *it;
       }
 
       retval.Add(token + wxT("d"));
       token = wxEmptyString;
     }
     else
-      token = token + string.GetChar(pos++);
+    {
+      token = token + Ch;
+      it++;pos++;
+    }
   }
 
   // Add the last token we detected to the token list
