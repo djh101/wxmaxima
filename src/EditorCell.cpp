@@ -1039,26 +1039,30 @@ int EditorCell::GetIndentDepth(wxString text, int positionOfCaret)
   std::list<int> indentChars;
   indentChars.push_back(0);
 
+  wxString::const_iterator it = m_text.begin();
+
   // Determine how many parenthesis this cell opens or closes before the point
   long pos = 0;
-  while ((pos < (long) text.Length()) && (pos < positionOfCaret))
+  while ((pos < positionOfCaret) && (it != m_text.end()))
   {
-    wxChar ch = text[pos];
+    wxChar ch = *it;
     if (ch == wxT('\\'))
     {
-      pos++;
+      ++pos;++it;
       continue;
     }
 
     if (ch == wxT('\"'))
     {
-      pos++;
+      ++pos;++it;
       while (
-              (pos < (long) text.Length()) &&
+              (it != m_text.end()) &&
               (pos < positionOfCaret) &&
-              (text[pos] != wxT('\"'))
+              (*it != wxT('\"'))
               )
-        pos++;
+      {
+        ++pos;++it;
+      }
     }
 
     if (
@@ -1119,7 +1123,15 @@ int EditorCell::GetIndentDepth(wxString text, int positionOfCaret)
     // A "do" or an "if" increases the current indentation level by a tab.
     if ((!wxIsalnum(ch)) || (pos == 0))
     {
-      wxString rest = text.Right(text.Length() - pos - 1);
+      // Concatenate the current with the following two characters
+      wxString::const_iterator it2(it);
+      wxString rest(*it2);
+      ++it2;
+      rest += wxString(*it2);
+      ++it2;
+      rest += wxString(*it2);
+
+      // Handle a "do"
       if (rest.StartsWith(wxT("do")) && ((rest.Length() < 3) || (!wxIsalnum(rest[2]))))
       {
         int lst = 0;
@@ -1130,6 +1142,8 @@ int EditorCell::GetIndentDepth(wxString text, int positionOfCaret)
         }
         indentChars.push_back(lst + 4);
       }
+
+      // Handle a "if"
       if (rest.StartsWith(wxT("if")) && ((rest.Length() < 3) || (!wxIsalnum(rest[2]))))
       {
         int lst = 0;
@@ -1142,10 +1156,10 @@ int EditorCell::GetIndentDepth(wxString text, int positionOfCaret)
       }
     }
 
-    pos++;
+    ++pos;++it;
   }
 
-  if ((long) text.Length() > positionOfCaret)
+  if (it != m_text.end())
   {
     if (
             (text[positionOfCaret] == wxT(')')) ||
@@ -1164,7 +1178,17 @@ int EditorCell::GetIndentDepth(wxString text, int positionOfCaret)
   else
     retval = indentChars.back();
 
-  wxString rightOfCursor = text.Right(text.Length() - positionOfCaret - 1);
+  // A fast way to get the next 5 characters
+  wxString rightOfCursor;
+  for(int i=0; i<5; i++)
+  {
+    if (it == m_text.end())
+      break;
+    
+    rightOfCursor += *it;
+    ++it;
+  }
+  
   rightOfCursor.Trim();
   rightOfCursor.Trim(false);
   if (
