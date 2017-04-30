@@ -5963,8 +5963,6 @@ void wxMaxima::EvaluateEvent(wxCommandEvent &event)
 
 wxString wxMaxima::GetUnmatchedParenthesisState(wxString text)
 {
-  int len = text.Length();
-  int index = 0;
 
   std::list<wxChar> delimiters;
 
@@ -5975,9 +5973,11 @@ wxString wxMaxima::GetUnmatchedParenthesisState(wxString text)
 
   wxChar lastC = wxT(';');
   wxChar lastnonWhitespace = wxT(',');
-  while (index < len)
+
+  wxString::const_iterator it = m_text.begin();
+  while (it != text.end())
   {
-    wxChar c = text[index];
+    wxChar c = *it;
 
     switch (c)
     {
@@ -6006,25 +6006,38 @@ wxString wxMaxima::GetUnmatchedParenthesisState(wxString text)
         break;
 
       case wxT('\\'):
-        index++;
+        ++it;
         lastC = c;
         break;
 
       case wxT('\"'):
-        index++;
-        while ((index < len) && (c = text[index]) != wxT('\"'))
+        ++it;
+        while ((it != text.end()) && (c = *it) != wxT('\"'))
         {
           if (c == wxT('\\'))
-            index++;
-          if(index < len)
-            index++;
+            ++it;
+          if(it != text.end())
+            ++it;
         }
-        if ((index == len) && (text[index] != wxT('\"'))) return (_("Unterminated string."));
+        if ((it != text.end()) && (*it != wxT('\"'))) return (_("Unterminated string."));
         lastC = c;
         break;
 
       case wxT(':'):
-        if ((long) text.find(wxT("lisp"), index + 1) == index + 1)
+      {
+        // Extract 5 chars of the string.
+        wxString command;
+        wxString::const_iterator it2(it);
+        for(i=0;i<5;i++)
+          if(it2 != text.end())
+          {
+            command += wxString(*it2);
+            ++it2;
+          }
+
+        // Let's see if this is a :lisp-quiet or a :lisp
+        // TODO: Should we handle label names like :lisptest or :list-quiettext?
+        if (command == wxT(":lisp"))
           lisp = true;
         index++;
         lastC = c;
@@ -6039,20 +6052,28 @@ wxString wxMaxima::GetUnmatchedParenthesisState(wxString text)
         lastC = c;
         break;
 
+        // Handle comments
       case wxT('/'):
-        if (index < len - 1)
+        if (it != text.end())
         {
-          if (text[index + 1] == wxT('*'))
+          ++it;
+          if (*it == wxT('*'))
           {
-            if (index < len - 2)
+            
+            // Comment start. Let's search for the comment end.
+
+            if (it != text.end())
+              ++it;
+            while(it != text.end())
             {
-              index = text.find(wxT("*/"), index + 2);
+              lastC = *it;
+              ++it;
+              if(it == text.end())
+                return (_("Unterminated comment."));
+
+              else if((lastC == wxT('*')) && (*it == wxT('/')))
+                break:
             }
-            else
-              index = wxNOT_FOUND;
-            if (index == wxNOT_FOUND)
-              return (_("Unterminated comment."));
-            index++;
           }
           else lastC = c;
         }
@@ -6072,7 +6093,7 @@ wxString wxMaxima::GetUnmatchedParenthesisState(wxString text)
             )
       lastnonWhitespace = c;
 
-    index++;
+    ++it;
   }
   if (!delimiters.empty())
   {
