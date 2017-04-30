@@ -5974,7 +5974,7 @@ wxString wxMaxima::GetUnmatchedParenthesisState(wxString text)
   wxChar lastC = wxT(';');
   wxChar lastnonWhitespace = wxT(',');
 
-  wxString::const_iterator it = m_text.begin();
+  wxString::const_iterator it = text.begin();
   while (it != text.end())
   {
     wxChar c = *it;
@@ -6028,7 +6028,7 @@ wxString wxMaxima::GetUnmatchedParenthesisState(wxString text)
         // Extract 5 chars of the string.
         wxString command;
         wxString::const_iterator it2(it);
-        for(i=0;i<5;i++)
+        for(int i = 0;i < 5;i++)
           if(it2 != text.end())
           {
             command += wxString(*it2);
@@ -6039,10 +6039,10 @@ wxString wxMaxima::GetUnmatchedParenthesisState(wxString text)
         // TODO: Should we handle label names like :lisptest or :list-quiettext?
         if (command == wxT(":lisp"))
           lisp = true;
-        index++;
+        ++it;
         lastC = c;
         break;
-
+      }
       case wxT(';'):
       case wxT('$'):
         if ((!lisp) && (!delimiters.empty()))
@@ -6068,11 +6068,14 @@ wxString wxMaxima::GetUnmatchedParenthesisState(wxString text)
             {
               lastC = *it;
               ++it;
+
+              // We reached the end of the string without finding a comment end.
               if(it == text.end())
                 return (_("Unterminated comment."));
 
-              else if((lastC == wxT('*')) && (*it == wxT('/')))
-                break:
+              // A comment end.
+              if((lastC == wxT('*')) && (*it == wxT('/')))
+                break;
             }
           }
           else lastC = c;
