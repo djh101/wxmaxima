@@ -6028,7 +6028,7 @@ wxString wxMaxima::GetUnmatchedParenthesisState(wxString text)
         // Extract 5 chars of the string.
         wxString command;
         wxString::const_iterator it2(it);
-        for(int i=0;i<5;i++)
+        for(int i = 0;i < 5;i++)
           if(it2 != text.end())
           {
             command += wxString(*it2);
