@@ -3327,7 +3327,7 @@ wxArrayString EditorCell::StringToTokens(wxString text)
       it++;
       token = wxEmptyString;
     }
-    // Check for comments
+    // Check for "comment start" or "comment end" markers
     else if (((Ch == '/') && ((nextChar == wxT('*')) || (nextChar == wxT('\xB7')))) ||
              (((Ch == wxT('*')) || (Ch == wxT('\xB7'))) && ((nextChar == wxT('/')))))
     {
