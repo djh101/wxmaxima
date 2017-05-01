@@ -5981,6 +5981,7 @@ wxString wxMaxima::GetUnmatchedParenthesisState(wxString text)
 
     switch (c)
     {
+      // Opening parenthesis
       case wxT('('):
         delimiters.push_back(wxT(')'));
         lastC = c;
@@ -5993,7 +5994,8 @@ wxString wxMaxima::GetUnmatchedParenthesisState(wxString text)
         delimiters.push_back(wxT('}'));
         lastC = c;
         break;
-
+        
+      // Closing parenthesis
       case wxT(')'):
       case wxT(']'):
       case wxT('}'):
@@ -6005,11 +6007,13 @@ wxString wxMaxima::GetUnmatchedParenthesisState(wxString text)
           return (_("Comma directly followed by a closing parenthesis"));
         break;
 
+      // Escaped characters
       case wxT('\\'):
         ++it;
         lastC = c;
         break;
 
+      // Strings
       case wxT('\"'):
         ++it;
         while ((it != text.end()) && (c = *it) != wxT('\"'))
@@ -6023,6 +6027,7 @@ wxString wxMaxima::GetUnmatchedParenthesisState(wxString text)
         lastC = c;
         break;
 
+      // An eventual :lisp command
       case wxT(':'):
       {
         // Extract 5 chars of the string.
@@ -6051,18 +6056,19 @@ wxString wxMaxima::GetUnmatchedParenthesisState(wxString text)
         lastC = c;
         break;
 
-        // Handle comments
+      // Comments
       case wxT('/'):
         if (it != text.end())
         {
-          ++it;
-          if (*it == wxT('*'))
+          wxString::const_iterator it2(it);
+          ++it2;
+          if (*it2 == wxT('*'))
           {
-            
             // Comment start. Let's search for the comment end.
 
             if (it != text.end())
               ++it;
+            lastC = ' ';
             while(it != text.end())
             {
               lastC = *it;
