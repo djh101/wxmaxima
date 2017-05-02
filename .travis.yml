@@ -8,8 +8,9 @@ os:
 osx_image: xcode8.3
 
 branches:
-  only:
-    - master
+  except:
+  - gh_pages
+  - DebianPackaging
 
 cache:
   ccache: true

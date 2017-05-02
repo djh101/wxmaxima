@@ -3027,7 +3027,16 @@ bool EditorCell::CopyToClipboard()
     long end = MAX(m_selectionStart, m_selectionEnd) - 1;
     wxString s = m_text.SubString(start, end);
 
-    wxTheClipboard->SetData(new wxTextDataObject(s));
+    // For some reason wxMaxima sometimes hangs when putting string on the
+    // clipboard. Also Valgrind tells me that if I don't add a null byte to my string 
+    // one byte too much is accessed. 
+    //
+    // Another hope is that using a wxDataObjectComposite uses a different code path:
+    // Valgrind tells me that the clipboard uses an uninitialized 64 bit value
+    // in this case when using a 64 bit linux box instead.
+    wxDataObjectComposite *data = new wxDataObjectComposite;
+    data->Add(new wxTextDataObject(s + wxT('\0')));
+    wxTheClipboard->SetData(data);
     wxTheClipboard->Close();
   }
   return true;
@@ -3811,12 +3820,14 @@ void EditorCell::StyleTextTexts()
       // Extract a line inserting a soft linebreak if necessary
       while (it != m_text.end())
       {
+        wxString::const_iterator nextChar(it);
+        ++nextChar;
         // Handle hard linebreaks or indent a soft linebreak if necessary
-        if ((*it == '\n') || (it + 1 == m_text.end()))
+        if ((*it == '\n') || (nextChar == m_text.end()))
         {
           // Can we introduce a soft line break?
           // One of the next questions will be: Do we need to?
-          if ((lastSpacePos >= 0) && (*it != '\n'))
+          if (lastSpacePos >= 0)
           {
             // How far has the current line to be indented?
             if ((!indentPixels.empty()) && (!newLine))
@@ -3825,23 +3836,23 @@ void EditorCell::StyleTextTexts()
               indentation = 0;
             
             // How long is the current line already?
-            configuration->GetDC().GetTextExtent(m_text.SubString(lastLineStart, i), &width, &height);
-            // Does the line extend too much to the right to fit on the screen /
-            // to be easy to read?
+            configuration->GetDC().GetTextExtent(
+                                                 m_text.SubString(lastLineStart, i),
+                                                 &width, &height);
+            // Do we need to introduce a soft line break?
             if (width + xmargin + indentation >= configuration->GetLineWidth())
             {
-              // We need a line break in front of the last word
+              // We need a line break in front of the last space
               m_text[lastSpacePos] = wxT('\r');
               line = m_text.SubString(lastLineStart, lastSpacePos - 1);
-              i = lastSpacePos + 1;
+              i = lastSpacePos;
               it = lastSpaceIt;
-              ++it;
-              lastLineStart = i;
+              lastLineStart = i + 1;
               lastSpacePos = -1;
               break;
             }
           }
-          if (*it == '\n')
+          if ((*it == '\n') || (*it == '\r'))
           {
             if (i > 0)
               line = m_text.SubString(lastLineStart, i - 1);
@@ -3864,8 +3875,9 @@ void EditorCell::StyleTextTexts()
           // TODO: If we handled spaces before we handled soft line breaks this
           // branch would be unnecessary, right?
           
-          // Spaces and reaching the end of the text both trigger auto-wrapping
-          if ((*it == ' ') || (i >= m_text.Length() - 1))
+          // Spaces, newlines and reaching the end of the text all trigger
+          // auto-wrapping
+          if ((*it == ' ') || (*it == '\n') || (nextChar == m_text.end()))
           {
             // Determine the current line's length
             configuration->GetDC().GetTextExtent(m_text.SubString(lastLineStart, i), &width, &height);
