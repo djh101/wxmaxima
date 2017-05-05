@@ -41,6 +41,7 @@ wxMaximaFrame::wxMaximaFrame(wxWindow *parent, int id, const wxString &title,
                              long style) :
         wxFrame(parent, id, title, pos, size, wxDEFAULT_FRAME_STYLE)
 {
+  m_notificationMessage = NULL;
   m_userSymbols = NULL;
   m_EvaluationQueueLength = 0;
   m_commandsLeftInCurrentCell = 0;
@@ -1569,5 +1570,11 @@ void wxMaximaFrame::ShowToolBar(bool show)
     }
   }
 #endif
+}
+
+void wxMaximaFrame::OnNotificationClose(wxCommandEvent WXUNUSED(&event))
+{
+  // Remove the marker that we currently have a notification message.
+  m_notificationMessage = NULL;
 }
 

@@ -29,6 +29,7 @@
   everything surrounding it in wxMaximaFrame.
  */
 
+#include <wx/notifmsg.h>
 #include "wxMaxima.h"
 #include "SubstituteWiz.h"
 #include "IntegrateWiz.h"
@@ -122,6 +123,7 @@ wxMaxima::wxMaxima(wxWindow *parent, int id, const wxString title,
                    const wxPoint pos, const wxSize size) :
         wxMaximaFrame(parent, id, title, pos, size)
 {
+  m_isActive = true;
   m_outputPromptRegEx.Compile(wxT("<lbl>.*</lbl>"));
   wxConfig *config = (wxConfig *) wxConfig::Get();
   m_unsuccessfullConnectionAttempts = 0;
@@ -1202,16 +1204,7 @@ void wxMaxima::ReadMiscText(wxString &data)
     {
       ConsoleAppend(textline, MC_TYPE_ERROR);
 
-      bool abortOnError = false;
-      wxConfig::Get()->Read(wxT("abortOnError"), &abortOnError);
-      if (abortOnError || m_batchmode)
-        m_console->m_evaluationQueue.Clear();
-      {
-        SetBatchMode(false);
-        // Inform the user that the evaluation queue is empty.
-        EvaluationQueueLength(0);
-        m_console->ScrollToError();
-      }
+      AbortOnError();
     }
     else
       ConsoleAppend(textline, MC_TYPE_DEFAULT);
@@ -2267,16 +2260,7 @@ void wxMaxima::ReadLispError(wxString &data)
 
     data = wxEmptyString;
 
-    bool abortOnError = false;
-    wxConfig::Get()->Read(wxT("abortOnError"), &abortOnError);
-    if (abortOnError || m_batchmode)
-      m_console->m_evaluationQueue.Clear();
-    {
-      SetBatchMode(false);
-      // Inform the user that the evaluation queue is empty.
-      EvaluationQueueLength(0);
-      m_console->ScrollToError();
-    }
+    AbortOnError();
   }
 }
 
@@ -3210,21 +3194,42 @@ void wxMaxima::ReadStdErr()
 
     DoRawConsoleAppend(o, MC_TYPE_ERROR);
 
-    // If maxima did output something it defintively has stopped.
-    // The question is now if we want to try to send it something new to evaluate.
-    bool abortOnError = false;
-    wxConfig::Get()->Read(wxT("abortOnError"), &abortOnError);
-    SetBatchMode(false);
-    if (abortOnError || m_batchmode)
-    {
-      m_console->m_evaluationQueue.Clear();
-      // Inform the user that the evaluation queue is empty.
-      EvaluationQueueLength(0);
-      m_console->ScrollToError();
-    }
-    else
+    if(!AbortOnError())
       TryEvaluateNextInQueue();
   }
+}
+
+bool wxMaxima::AbortOnError()
+{
+  // If maxima did output something it defintively has stopped.
+  // The question is now if we want to try to send it something new to evaluate.
+  bool abortOnError = false;
+  wxConfig::Get()->Read(wxT("abortOnError"), &abortOnError);
+  SetBatchMode(false);
+
+  if((m_notificationMessage == NULL ) && (!m_isActive))
+  {
+    m_notificationMessage = new wxNotificationMessage(_("Error message from Maxima"));
+    m_notificationMessage->Show();
+  }
+  
+  #if wxUSE_NOTIFICATION_MESSAGE
+  // if(m_notificationMessage)
+  //   m_notificationMessage -> Connect(wxEVT_NOTIFICATION_MESSAGE_DISMISSED,
+  //                                    wxCommandEventHandler(wxMaximaFrame::OnNotificationClose),
+  //                                    NULL, this);
+  #endif
+  
+  if (abortOnError || m_batchmode)
+  {
+    m_console->m_evaluationQueue.Clear();
+    // Inform the user that the evaluation queue is empty.
+    EvaluationQueueLength(0);
+    m_console->ScrollToError();
+    return true;
+  }
+  else
+    return false;
 }
 
 void wxMaxima::OnTimerEvent(wxTimerEvent &event)
@@ -6250,19 +6255,7 @@ void wxMaxima::TryEvaluateNextInQueue()
 
       m_console->SetWorkingGroup(NULL);
       m_console->RequestRedraw();
-      bool abortOnError = false;
-      wxConfig::Get()->Read(wxT("abortOnError"), &abortOnError);
-      SetBatchMode(false);
-      // Inform the user that the evaluation queue is empty.
-      EvaluationQueueLength(0);
-      if (abortOnError || m_batchmode)
-      {
-        m_console->m_evaluationQueue.Clear();
-        StatusMaximaBusy(waiting);
-        m_console->SetHCaret(tmp);
-        m_console->ScrollToCaret();
-      }
-      else
+      if(!AbortOnError())
       {
         m_console->m_evaluationQueue.RemoveFirst();
         m_outputCellsFromCurrentCommand = 0;
@@ -6686,6 +6679,14 @@ int wxMaxima::SaveDocumentP()
   return dialog.ShowModal();
 }
 
+void wxMaxima::OnActivate(wxActivateEvent &event)
+{
+  m_isActive = event.GetActive();
+
+  wxDELETE(m_notificationMessage);
+  m_notificationMessage = NULL;
+}
+
 BEGIN_EVENT_TABLE(wxMaxima, wxFrame)
 
 #if defined __WXMAC__
@@ -7026,6 +7027,7 @@ EVT_UPDATE_UI(menu_show_toolbar, wxMaxima::UpdateMenus)
                 EVT_FIND_REPLACE(wxID_ANY, wxMaxima::OnReplace)
                 EVT_FIND_REPLACE_ALL(wxID_ANY, wxMaxima::OnReplaceAll)
                 EVT_FIND_CLOSE(wxID_ANY, wxMaxima::OnFindClose)
+                EVT_ACTIVATE(wxMaxima::OnActivate)
 
 END_EVENT_TABLE()
 
