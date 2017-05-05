@@ -6684,7 +6684,8 @@ void wxMaxima::OnActivate(wxActivateEvent &event)
 {
   m_isActive = event.GetActive();
 
-  m_notificationMessage->Close();
+  if(m_notificationMessage != NULL)
+    m_notificationMessage->Close();
 }
 
 BEGIN_EVENT_TABLE(wxMaxima, wxFrame)
