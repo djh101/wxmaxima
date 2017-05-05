@@ -3207,9 +3207,10 @@ bool wxMaxima::AbortOnError()
   wxConfig::Get()->Read(wxT("abortOnError"), &abortOnError);
   SetBatchMode(false);
 
-  if((m_notificationMessage == NULL ) && (!m_isActive))
+  if(!m_isActive)
   {
-    m_notificationMessage = new wxNotificationMessage(_("Error message from Maxima"));
+    if (m_notificationMessage == NULL )
+      m_notificationMessage = new wxNotificationMessage(_("Error message from Maxima"));
     m_notificationMessage->Show();
   }
   
@@ -6683,8 +6684,7 @@ void wxMaxima::OnActivate(wxActivateEvent &event)
 {
   m_isActive = event.GetActive();
 
-  wxDELETE(m_notificationMessage);
-  m_notificationMessage = NULL;
+  m_notificationMessage->Close();
 }
 
 BEGIN_EVENT_TABLE(wxMaxima, wxFrame)
