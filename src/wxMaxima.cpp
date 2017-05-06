@@ -123,6 +123,8 @@ wxMaxima::wxMaxima(wxWindow *parent, int id, const wxString title,
                    const wxPoint pos, const wxSize size) :
         wxMaximaFrame(parent, id, title, pos, size)
 {
+  m_notificationMessage.SetParent(this);
+  m_notificationMessageActive = false;
   m_isActive = true;
   m_outputPromptRegEx.Compile(wxT("<lbl>.*</lbl>"));
   wxConfig *config = (wxConfig *) wxConfig::Get();
@@ -1425,6 +1427,15 @@ void wxMaxima::ReadPrompt(wxString &data)
     // If the user answers a question additional output might be required even
     // if the question has been preceded by many lines.
     m_outputCellsFromCurrentCommand = 0;
+    if(!m_isActive)
+    {
+      m_notificationMessage.SetTitle(_("Maxima Question"));
+      m_notificationMessage.SetMessage(_("Maxima asks a question!"));
+      m_notificationMessage.SetFlags(wxICON_INFORMATION);
+      if(!m_notificationMessageActive)
+        m_notificationMessage.Show();
+      m_notificationMessageActive = true;
+    }
     if (!o.IsEmpty())
     {
       if (o.Find(wxT("<mth>")) > -1)
@@ -3207,11 +3218,13 @@ bool wxMaxima::AbortOnError()
   wxConfig::Get()->Read(wxT("abortOnError"), &abortOnError);
   SetBatchMode(false);
 
-  if(!m_isActive)
+  if((!m_isActive) &&(!m_notificationMessageActive))
   {
-    if (m_notificationMessage == NULL )
-      m_notificationMessage = new wxNotificationMessage(_("Error message from Maxima"));
-    m_notificationMessage->Show();
+    m_notificationMessage.SetTitle(_("Maxima Error"));
+    m_notificationMessage.SetMessage(_("Maxima has issued an error!"));
+    m_notificationMessage.SetFlags(wxICON_ERROR);
+    m_notificationMessage.Show();
+    m_notificationMessageActive = true;
   }
   
   #if wxUSE_NOTIFICATION_MESSAGE
@@ -6683,9 +6696,9 @@ int wxMaxima::SaveDocumentP()
 void wxMaxima::OnActivate(wxActivateEvent &event)
 {
   m_isActive = event.GetActive();
-
-  if(m_notificationMessage != NULL)
-    m_notificationMessage->Close();
+  if(m_notificationMessageActive)
+    m_notificationMessage.Close();
+  m_notificationMessageActive = false;
 }
 
 BEGIN_EVENT_TABLE(wxMaxima, wxFrame)
@@ -7029,7 +7042,6 @@ EVT_UPDATE_UI(menu_show_toolbar, wxMaxima::UpdateMenus)
                 EVT_FIND_REPLACE_ALL(wxID_ANY, wxMaxima::OnReplaceAll)
                 EVT_FIND_CLOSE(wxID_ANY, wxMaxima::OnFindClose)
                 EVT_ACTIVATE(wxMaxima::OnActivate)
-
 END_EVENT_TABLE()
 
 /* Local Variables:       */
