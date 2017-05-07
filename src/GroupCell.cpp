@@ -312,6 +312,8 @@ void GroupCell::MarkAsDeleted()
   EditorCell *input = GetInput();
   if (input != NULL)
     input->MarkAsDeleted();
+  if(this == m_cellPointers->m_lastError)
+    m_cellPointers->m_lastError = NULL;
   if (this == m_cellPointers->m_lastWorkingGroup)
     m_cellPointers->m_lastWorkingGroup = NULL;
   if (this == m_cellPointers->m_groupCellUnderPointer)

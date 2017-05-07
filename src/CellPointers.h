@@ -43,6 +43,8 @@ public:
   MathCell *m_cellSearchStartedIn;
   //! Which cursor position incremental search has started at?
   int m_indexSearchStartedAt;
+  //! Which GroupCell the last error message was in?
+  MathCell *m_lastError;
   //! Which cell the blinking cursor is in?
   MathCell *m_activeCell;
   //! The y position the selection starts at

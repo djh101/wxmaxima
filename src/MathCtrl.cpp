@@ -524,9 +524,6 @@ void MathCtrl::InsertLine(MathCell *newCell, bool forceNewLine)
   GroupCell *tmp = GetWorkingGroup();
 
   if (tmp == NULL)
-    tmp = GetWorkingGroup();
-
-  if (tmp == NULL)
     tmp = GetLastWorkingGroup();
                                              
   if (tmp == NULL)

@@ -440,7 +440,22 @@ void wxMaxima::ConsoleAppend(wxString s, int type, wxString userLabel)
   }
 
   else if (type == MC_TYPE_ERROR)
+  {
     DoRawConsoleAppend(s, MC_TYPE_ERROR);
+    GroupCell *tmp = m_console->GetWorkingGroup();
+    
+    if (tmp == NULL)
+      tmp = m_console->GetLastWorkingGroup();
+    
+    if (tmp == NULL)
+    {
+    if (m_console->GetActiveCell())
+      tmp = dynamic_cast<GroupCell *>(m_console->GetActiveCell()->GetParent());
+    }
+    
+    if(tmp != NULL)
+      m_console->m_cellPointers->m_lastError = tmp;
+  }
   else
     DoConsoleAppend(wxT("<span>") + s + wxT("</span>"), type, false);
 

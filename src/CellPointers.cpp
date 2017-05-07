@@ -34,6 +34,7 @@ CellPointers::CellPointers()
   m_cellSearchStartedIn = NULL;
   m_indexSearchStartedAt = -1;
   m_activeCell = NULL;
+  m_lastError = NULL;
   m_selectionStart_px = -1;
   m_selectionEnd_px = -1;
   m_groupCellUnderPointer = NULL;
