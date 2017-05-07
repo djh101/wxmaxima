@@ -207,6 +207,7 @@ protected:
   void ConfigChanged();
   //! Called when the "Scroll to last error" button is pressed.
   void OnJumpToError(wxCommandEvent &event);
+  void OnFollowRightClick(wxCommandEvent &event);
 
   //! Called when the "Scroll to currently evaluated" button is pressed.
   void OnFollow(wxCommandEvent &event);
