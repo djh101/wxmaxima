@@ -312,8 +312,7 @@ void GroupCell::MarkAsDeleted()
   EditorCell *input = GetInput();
   if (input != NULL)
     input->MarkAsDeleted();
-  if(this == m_cellPointers->m_lastError)
-    m_cellPointers->m_lastError = NULL;
+  m_cellPointers->m_errorList.Remove(this);
   if (this == m_cellPointers->m_lastWorkingGroup)
     m_cellPointers->m_lastWorkingGroup = NULL;
   if (this == m_cellPointers->m_groupCellUnderPointer)
@@ -392,6 +391,7 @@ void GroupCell::RemoveOutput()
     m_output = NULL;
   }
 
+  m_cellPointers->m_errorList.Remove(this);
   // Calculate the new cell height.
 
   ResetSize();

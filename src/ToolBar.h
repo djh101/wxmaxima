@@ -114,7 +114,6 @@ public:
     tb_animation_stop,
     tb_find,
     tb_hideCode,
-    tb_jumpToError,
     menu_restart_id
   };
 

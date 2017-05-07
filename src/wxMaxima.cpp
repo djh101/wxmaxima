@@ -454,7 +454,7 @@ void wxMaxima::ConsoleAppend(wxString s, int type, wxString userLabel)
     }
     
     if(tmp != NULL)
-      m_console->m_cellPointers->m_lastError = tmp;
+      m_console->m_cellPointers->m_errorList.Add(tmp);
   }
   else
     DoConsoleAppend(wxT("<span>") + s + wxT("</span>"), type, false);
@@ -5973,15 +5973,17 @@ void wxMaxima::EvaluateEvent(wxCommandEvent &event)
       tmp->AddEnding();
     // if active cell is part of a working group, we have a special
     // case - answering a question. Manually send answer to Maxima.
-    if (m_console->GCContainsCurrentQuestion(dynamic_cast<GroupCell *>(tmp->GetParent())))
+    GroupCell *cell = dynamic_cast<GroupCell *>(tmp->GetParent());
+    if (m_console->GCContainsCurrentQuestion(cell))
     {
       SendMaxima(tmp->ToString(true), true);
       StatusMaximaBusy(calculating);
       m_console->QuestionAnswered();
     }
     else
-    { // normally just add to queue
-      m_console->AddCellToEvaluationQueue(dynamic_cast<GroupCell *>(tmp->GetParent()));
+    { // normally just add to queue (and mark the cell as no more containing an error message)
+      m_console->m_cellPointers->m_errorList.Remove(cell);
+      m_console->AddCellToEvaluationQueue(cell);
     }
   }
   else
@@ -6591,22 +6593,10 @@ void wxMaxima::OnFollow(wxCommandEvent &event)
   m_console->OnFollow();
 }
 
-void wxMaxima::OnFollowRightClick(wxCommandEvent &event)
-{
-  wxMenu popupMenu;
-  
-  popupMenu.Append(ToolBar::tb_follow, _("Follow evaluation"), wxEmptyString, wxITEM_NORMAL);
-  popupMenu.Append(ToolBar::tb_jumpToError, _("Jump to error"), wxEmptyString, wxITEM_NORMAL);
-
-  // create menu if we have any items
-  if (popupMenu.GetMenuItemCount() > 0)
-     wxWindow::PopupMenu(&popupMenu);
-}
-
 void wxMaxima::OnJumpToError(wxCommandEvent &event)
 {
-  if(m_console->m_cellPointers->m_lastError)
-    m_console->ScrollToCell(m_console->m_cellPointers->m_lastError,false);
+  if(m_console->m_cellPointers->m_errorList.Head())
+    m_console->ScrollToCell(m_console->m_cellPointers->m_errorList.Head(),false);
 }
 
 long *VersionToInt(wxString version)
@@ -6960,8 +6950,6 @@ BEGIN_EVENT_TABLE(wxMaxima, wxFrame)
                 EVT_TOOL(ToolBar::tb_find, wxMaxima::EditMenu)
 #endif
                 EVT_TOOL(ToolBar::tb_follow, wxMaxima::OnFollow)
-                EVT_TOOL(ToolBar::tb_jumpToError, wxMaxima::OnJumpToError)
-                EVT_TOOL_RCLICKED(ToolBar::tb_follow, wxMaxima::OnFollowRightClick)
                 EVT_SOCKET(socket_server_id, wxMaxima::ServerEvent)
                 EVT_SOCKET(socket_client_id, wxMaxima::ClientEvent)
 /* These commands somehow caused the menu to be updated six times on every
