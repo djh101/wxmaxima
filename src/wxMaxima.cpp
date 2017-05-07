@@ -6586,10 +6586,15 @@ void wxMaxima::TableOfContentsSelection(wxListEvent &ev)
   m_console->SetFocus();
 }
 
-//! Called when the "Scroll to currently evaluated" button is pressed.
 void wxMaxima::OnFollow(wxCommandEvent &event)
 {
   m_console->OnFollow();
+}
+
+void wxMaxima::OnJumpToError(wxCommandEvent &event)
+{
+  if(m_console->m_cellPointers->m_lastError)
+    m_console->ScrollToCell(m_console->m_cellPointers->m_lastError,false);
 }
 
 
@@ -6944,6 +6949,7 @@ BEGIN_EVENT_TABLE(wxMaxima, wxFrame)
                 EVT_TOOL(ToolBar::tb_find, wxMaxima::EditMenu)
 #endif
                 EVT_TOOL(ToolBar::tb_follow, wxMaxima::OnFollow)
+                EVT_TOOL(ToolBar::tb_jumpToError, wxMaxima::OnJumpToError)
                 EVT_SOCKET(socket_server_id, wxMaxima::ServerEvent)
                 EVT_SOCKET(socket_client_id, wxMaxima::ClientEvent)
 /* These commands somehow caused the menu to be updated six times on every

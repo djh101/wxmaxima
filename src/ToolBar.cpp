@@ -261,3 +261,33 @@ void ToolBar::AnimationButtonState(AnimationStartStopState state)
     m_AnimationStartStopState = state;
   }
 }
+
+void ToolBar::OnFollowRightClick(wxCommandEvent &event)
+{
+  wxMenu *popupMenu = new wxMenu();
+  
+  m_cellRightClickedOn = m_structure[event.GetIndex()];
+
+  if (m_cellRightClickedOn != NULL)
+  {
+
+    if (m_cellRightClickedOn->GetHiddenTree())
+      popupMenu->Append(popid_Unfold, _("Unhide"), wxEmptyString, wxITEM_NORMAL);
+    else
+    {
+      popupMenu->Append(popid_Fold, _("Hide"), wxEmptyString, wxITEM_NORMAL);
+      popupMenu->Append(popid_SelectTocChapter, _("Select"), wxEmptyString, wxITEM_NORMAL);
+      popupMenu->Append(popid_EvalTocChapter, _("Evaluate"), wxEmptyString, wxITEM_NORMAL);
+    }
+  }
+
+  // create menu if we have any items
+  if (popupMenu->GetMenuItemCount() > 0)
+    PopupMenu(popupMenu);
+  wxDELETE(popupMenu);
+
+}
+
+BEGIN_EVENT_TABLE(ToolBar, wxToolBar)
+                EVT_TOOL_RCLICKED(tb_jumpToError, ToolBar::OnFollowRightClick)
+END_EVENT_TABLE()

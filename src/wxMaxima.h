@@ -205,6 +205,8 @@ protected:
   void OnActivate(wxActivateEvent &event);
   //! Is called on start and whenever the configuration changes
   void ConfigChanged();
+  //! Called when the "Scroll to last error" button is pressed.
+  void OnJumpToError(wxCommandEvent &event);
 
   //! Called when the "Scroll to currently evaluated" button is pressed.
   void OnFollow(wxCommandEvent &event);

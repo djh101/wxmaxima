@@ -114,6 +114,7 @@ public:
     tb_animation_stop,
     tb_find,
     tb_hideCode,
+    tb_jumpToError,
     menu_restart_id
   };
 
@@ -180,6 +181,9 @@ public:
   //! Updates the slider to match the Slide Show cell.
   void UpdateSlider(SlideShow *cell);
 
+protected:
+  void OnFollowRightClick(wxCommandEvent &event);
+
 private:
   //! The position in the current slideshow at the last call of UpdateSlider()
   int m_slideShowDisplayedIndex;
@@ -195,6 +199,8 @@ private:
   //! True if we show the "needs information" button.
   bool m_needsInformation;
 
+protected:
+  DECLARE_EVENT_TABLE()
 };
 
 #endif
