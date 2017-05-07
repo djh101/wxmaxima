@@ -2849,7 +2849,7 @@ void wxMaxima::UpdateMenus(wxUpdateUIEvent &event)
                   (m_console->GetHCaret() != NULL)
   );
 
-  menubar->Enable(menu_triggerEvaluation, !m_console->m_evaluationQueue.Empty());
+  menubar->Enable(menu_jumptoerror, !m_console->m_cellPointers->m_errorList.Empty());
   menubar->Enable(menu_save_id, (!m_fileSaved));
 
   for (int id = menu_pane_math; id <= menu_pane_stats; id++)
@@ -3846,9 +3846,9 @@ void wxMaxima::MaximaMenu(wxCommandEvent &event)
   wxString f = wxT("/");
   switch (event.GetId())
   {
-    case menu_triggerEvaluation:
-      m_console->QuestionAnswered();
-      TryEvaluateNextInQueue();
+    case menu_jumptoerror:
+      if(m_console->m_cellPointers->m_errorList.Head())
+        m_console->SetActiveCell(dynamic_cast<GroupCell *>(m_console->m_cellPointers->m_errorList.Head())->GetEditable());
       break;
     case ToolBar::menu_restart_id:
       m_closing = true;
@@ -6142,12 +6142,6 @@ wxString wxMaxima::GetUnmatchedParenthesisState(wxString text)
   return wxEmptyString;
 }
 
-void wxMaxima::TriggerEvaluation()
-{
-  if (!m_console->m_evaluationQueue.Empty())
-    TryEvaluateNextInQueue();
-}
-
 //! Tries to evaluate next group cell in queue
 //
 // Calling this function should not do anything dangerous
@@ -6593,12 +6587,6 @@ void wxMaxima::OnFollow(wxCommandEvent &event)
   m_console->OnFollow();
 }
 
-void wxMaxima::OnJumpToError(wxCommandEvent &event)
-{
-  if(m_console->m_cellPointers->m_errorList.Head())
-    m_console->ScrollToCell(m_console->m_cellPointers->m_errorList.Head(),false);
-}
-
 long *VersionToInt(wxString version)
 {
   long *intV = new long[3];
@@ -6900,6 +6888,7 @@ BEGIN_EVENT_TABLE(wxMaxima, wxFrame)
                 EVT_MENU(gp_plot3, wxMaxima::PlotMenu)
                 EVT_MENU(menu_plot_format, wxMaxima::PlotMenu)
                 EVT_MENU(menu_soft_restart, wxMaxima::MaximaMenu)
+                EVT_MENU(menu_jumptoerror, wxMaxima::MaximaMenu)
                 EVT_MENU(menu_display, wxMaxima::MaximaMenu)
                 EVT_MENU(menu_pade, wxMaxima::CalculusMenu)
                 EVT_MENU(menu_add_path, wxMaxima::MaximaMenu)
