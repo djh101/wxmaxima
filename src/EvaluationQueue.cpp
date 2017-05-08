@@ -106,17 +106,19 @@ void EvaluationQueue::MakeSureIsTopOfQueue(GroupCell *gr)
   // of the evaluation queue.
   if(gr == m_queue->group)
     return;
-  
+
   // Add the new element to the top of the evaluation queue
   EvaluationQueueElement *newelement = new EvaluationQueueElement(gr);
-  if (m_last == NULL)
+  if (emptyWas)
     m_queue = m_last = newelement;
   else
   {
-    newelement->next = m_queue;
-    m_queue = newelement;
+    EvaluationQueueElement *oldHead = oldHead = m_queue->next;
+    m_queue->next = newelement;
+    newelement->next = oldHead;
   }
   m_size++;
+  m_tokens.Clear();
   
   if (emptyWas)
   {

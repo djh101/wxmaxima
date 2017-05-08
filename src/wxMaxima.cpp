@@ -1381,11 +1381,15 @@ void wxMaxima::ReadPrompt(wxString &data)
   // input for maxima
   if(!takeDataFromWorksheet)
   {
-    GroupCell *nextInQueue = dynamic_cast<GroupCell *>(m_console->m_evaluationQueue.GetCell());
-
-    // Does the current evaluation queue entry still contain answers?
-    if ((nextInQueue != NULL) && (nextInQueue->AnswerCell()))
-      takeDataFromWorksheet = true;
+    if(m_console->m_evaluationQueue.CommandsLeftInCell() > 1)
+    {
+      GroupCell *currentCell = dynamic_cast<GroupCell *>(m_console->m_evaluationQueue.GetCell());
+      
+      // Does the current evaluation queue entry still contain answers?
+      
+      if ((currentCell != NULL) && (currentCell->AnswerCell()))
+        takeDataFromWorksheet = true;
+    }
     else
     {
       // The current cell doesn't contain answers for maxima =>
@@ -1403,6 +1407,9 @@ void wxMaxima::ReadPrompt(wxString &data)
 
       // Let's now determine if the next code cell of the worksheet contains
       // answers.
+      if(workingGroup != NULL)
+        workingGroup = dynamic_cast<GroupCell *>(workingGroup->m_next);
+      
       while(workingGroup != NULL)
       {
         if(workingGroup->GetGroupType() == GC_TYPE_CODE)
@@ -1410,13 +1417,18 @@ void wxMaxima::ReadPrompt(wxString &data)
           takeDataFromWorksheet = workingGroup->AnswerCell();
           break;
         }
+        workingGroup = dynamic_cast<GroupCell *>(workingGroup->m_next);
       }
 
       // Make sure that our answer cell is the next cell in the evaluation queue.
       if(takeDataFromWorksheet)
+      {
         m_console->m_evaluationQueue.MakeSureIsTopOfQueue(workingGroup);
+        m_console->SetWorkingGroup(workingGroup);
+      }
     }
   }
+
   if (takeDataFromWorksheet)
   {
     o.Trim(true);
@@ -6044,7 +6056,7 @@ void wxMaxima::EvaluateEvent(wxCommandEvent &event)
   // Inform the user about the length of the evaluation queue.
   EvaluationQueueLength(m_console->m_evaluationQueue.Size(), m_console->m_evaluationQueue.CommandsLeftInCell());
   if (!evaluating)
-    TryEvaluateNextInQueue();;
+    TryEvaluateNextInQueue();
 }
 
 wxString wxMaxima::GetUnmatchedParenthesisState(wxString text)
@@ -6311,7 +6323,6 @@ void wxMaxima::TryEvaluateNextInQueue()
         m_xmlInspector->Add(text);
         m_xmlInspector->Add(wxT("\n\n\nMAXIMA RESPONSE:\n\n"));
       }
-
       SendMaxima(text, true);
       EvaluationQueueLength(m_console->m_evaluationQueue.Size(),
                             m_console->m_evaluationQueue.CommandsLeftInCell()
@@ -6369,7 +6380,7 @@ void wxMaxima::InsertMenu(wxCommandEvent &event)
       if((m_console->GetActiveCell() != NULL) &&
          (dynamic_cast<GroupCell *>(m_console->GetActiveCell()->GetParent())->GetGroupType() == GC_TYPE_CODE))
         dynamic_cast<GroupCell *>(m_console->GetActiveCell()->GetParent())->AnswerCell(event.IsChecked());
-      break;
+      return;
     case menu_insert_previous_output:
       output = true;
     case MathCtrl::popid_insert_input:
