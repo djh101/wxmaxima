@@ -117,6 +117,9 @@ MathCell *MathParser::ParseCellTag(wxXmlNode *node)
   if (type == wxT("code"))
   {
     group = new GroupCell(m_configuration, GC_TYPE_CODE, m_cellPointers);
+    wxString isAnswerCell = node->GetAttribute(wxT("answer"), wxT("no"));
+    if(isAnswerCell == wxT("yes"))
+      group->AnswerCell(true);
     wxXmlNode *children = node->GetChildren();
     children = SkipWhitespaceNode(children);
     while (children)

@@ -205,6 +205,8 @@ MathCell *GroupCell::Copy()
     tmp->SetInput(m_inputLabel->CopyList());
   if (m_output != NULL)
     tmp->SetOutput(m_output->CopyList());
+  if (m_answerCell)
+    tmp->AnswerCell(true);
 
   return tmp;
 }
@@ -220,10 +222,20 @@ wxString GroupCell::ToWXM(bool wxm)
   {
     case GC_TYPE_CODE:
       if(wxm)
-        retval += wxT("/* [wxMaxima: input   start ] */\n");
+      {
+        if(m_answerCell)
+          retval += wxT("/* [wxMaxima: answer  start ] */\n");
+        else
+          retval += wxT("/* [wxMaxima: input   start ] */\n");
+      }
       retval += GetEditable()->ToString() + wxT("\n");
       if(wxm)
-        retval += wxT("/* [wxMaxima: input   end   ] */\n");
+      {
+        if(m_answerCell)
+          retval += wxT("/* [wxMaxima: answer  end   ] */\n");
+        else
+          retval += wxT("/* [wxMaxima: input   end   ] */\n");
+      }          
       else
         trailingNewline = false;
       break;
@@ -1372,8 +1384,12 @@ wxString GroupCell::ToXML()
   switch (m_groupType)
   {
     case GC_TYPE_CODE:
+    {
       str += wxT(" type=\"code\"");
-      break;
+      if(AnswerCell())
+        str += wxT(" answer=\"yes\"");
+        break;
+    }
     case GC_TYPE_IMAGE:
       str += wxT(" type=\"image\"");
       break;
