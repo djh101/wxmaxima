@@ -81,11 +81,6 @@ void EvaluationQueue::MakeSureIsTopOfQueue(GroupCell *gr)
       || gr->GetEditable() == NULL) 
     return;
 
-  // Don't do anything if the element we want to add is already at the top
-  // of the evaluation queue.
-  if(gr == m_queue.front())
-    return;
-
   // Add the cell to the beginning of the queue.
   gr->GetEditable()->AddEnding();
 
@@ -98,7 +93,11 @@ void EvaluationQueue::MakeSureIsTopOfQueue(GroupCell *gr)
     oldHead = m_queue.front();
     m_queue.pop_front();
   }
-  m_queue.push_front(gr);
+  // Only push the new element if it isn't already at the place we want
+  // to put it.
+  if(gr != m_queue.front())
+    m_queue.push_front(gr);
+  
   if(oldHead != NULL)
     m_queue.push_front(oldHead);
   m_size++;
