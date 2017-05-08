@@ -90,6 +90,9 @@ public:
   //! Adds a GroupCell to the evaluation queue.
   void AddToQueue(GroupCell *gr);
 
+  //! Makes sure a specific groupcell is the next one that is evaluated.
+  void MakeSureIsTopOfQueue(GroupCell *gr);
+
   //! Remove a GroupCell from the evaluation queue.
   void Remove(GroupCell *gr);
 

@@ -1359,11 +1359,13 @@ void wxMaxima::ReadPrompt(wxString &data)
   else
     o = data.SubString(begin + m_promptPrefix.Length(), end - 1);
 
+  // If this was an input prompt we want to take the data for maxima
+  // from the worksheet. 
+  //
   // Input prompts have a length > 0 and end in a number followed by a ")".
   // They also begin with a "(". Questions (hopefully)
   // don't do that; Lisp prompts look like question prompts.
-  if (
-          (
+  bool takeDataFromWorksheet = (
                   (o.Length() > 3) &&
                   (o[o.Length() - 3] >= (wxT('0'))) &&
                   (o[o.Length() - 3] <= (wxT('9'))) &&
@@ -1372,8 +1374,50 @@ void wxMaxima::ReadPrompt(wxString &data)
           ) ||
           m_inLispMode ||
           (o.StartsWith(wxT("MAXIMA>"))) ||
-          (o.StartsWith(wxT("\nMAXIMA>")))
-          )
+          (o.StartsWith(wxT("\nMAXIMA>")));
+
+  // If we don't have an input prompt perhaps the cell that follows our cell
+  // contains input for maxima. Or perhaps the current cell still contains
+  // input for maxima
+  if(!takeDataFromWorksheet)
+  {
+    GroupCell *nextInQueue = dynamic_cast<GroupCell *>(m_console->m_evaluationQueue.GetCell());
+
+    // Does the current evaluation queue entry still contain answers?
+    if ((nextInQueue != NULL) && (nextInQueue->AnswerCell()))
+      takeDataFromWorksheet = true;
+    else
+    {
+      // The current cell doesn't contain answers for maxima =>
+      // Let's determine which one is the next cell in the worksheet:
+      // The next worksheet cell might contain answers without being
+      // in the evaluation queue
+      GroupCell *workingGroup = m_console->GetWorkingGroup();
+      if (workingGroup == NULL)
+        workingGroup = m_console->GetLastWorkingGroup();
+      if (workingGroup == NULL)
+      {
+        if (m_console->GetActiveCell())
+          workingGroup = dynamic_cast<GroupCell *>(m_console->GetActiveCell()->GetParent());
+      }
+
+      // Let's now determine if the next code cell of the worksheet contains
+      // answers.
+      while(workingGroup != NULL)
+      {
+        if(workingGroup->GetGroupType() == GC_TYPE_CODE)
+        {
+          takeDataFromWorksheet = workingGroup->AnswerCell();
+          break;
+        }
+      }
+
+      // Make sure that our answer cell is the next cell in the evaluation queue.
+      if(takeDataFromWorksheet)
+        m_console->m_evaluationQueue.MakeSureIsTopOfQueue(workingGroup);
+    }
+  }
+  if (takeDataFromWorksheet)
   {
     o.Trim(true);
     o.Trim(false);

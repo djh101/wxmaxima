@@ -94,6 +94,38 @@ void EvaluationQueue::Remove(GroupCell *gr)
   }
 }
 
+void EvaluationQueue::MakeSureIsTopOfQueue(GroupCell *gr)
+{
+  // don't add cells which can't be evaluated
+  bool emptyWas = Empty();
+  if (gr->GetGroupType() != GC_TYPE_CODE
+      || gr->GetEditable() == NULL) 
+    return;
+
+  // Don't do anything if the element we want to add is already at the top
+  // of the evaluation queue.
+  if(gr == m_queue->group)
+    return;
+  
+  // Add the new element to the top of the evaluation queue
+  EvaluationQueueElement *newelement = new EvaluationQueueElement(gr);
+  if (m_last == NULL)
+    m_queue = m_last = newelement;
+  else
+  {
+    newelement->next = m_queue;
+    m_queue = newelement;
+  }
+  m_size++;
+  
+  if (emptyWas)
+  {
+    gr->GetEditable()->AddEnding();
+    AddTokens(gr->GetEditable()->GetValue());
+    m_workingGroupChanged = true;
+  }
+}
+
 void EvaluationQueue::AddToQueue(GroupCell *gr)
 {
   bool emptyWas = Empty();
