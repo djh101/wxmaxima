@@ -2873,6 +2873,13 @@ void wxMaxima::UpdateMenus(wxUpdateUIEvent &event)
     menubar->Enable(MathCtrl::popid_divide_cell, m_console->GetActiveCell() != NULL);
     menubar->Enable(MathCtrl::popid_merge_cells, m_console->CanMergeSelection());
     menubar->Enable(wxID_PRINT, true);
+    bool enableAnswer = (m_console->GetActiveCell() != NULL) &&
+      (dynamic_cast<GroupCell *>(m_console->GetActiveCell()->GetParent())->GetGroupType() == GC_TYPE_CODE);
+    menubar->Enable(MathCtrl::popid_answer_cell,
+                    enableAnswer);
+    if(enableAnswer)
+      menubar->Check(MathCtrl::popid_answer_cell,
+                     dynamic_cast<GroupCell *>(m_console->GetActiveCell()->GetParent())->AnswerCell());
   }
   else
   {
@@ -6314,6 +6321,11 @@ void wxMaxima::InsertMenu(wxCommandEvent &event)
   bool output = false;
   switch (event.GetId())
   {
+    case MathCtrl::popid_answer_cell:
+      if((m_console->GetActiveCell() != NULL) &&
+         (dynamic_cast<GroupCell *>(m_console->GetActiveCell()->GetParent())->GetGroupType() == GC_TYPE_CODE))
+        dynamic_cast<GroupCell *>(m_console->GetActiveCell()->GetParent())->AnswerCell(event.IsChecked());
+      break;
     case menu_insert_previous_output:
       output = true;
     case MathCtrl::popid_insert_input:
@@ -7030,6 +7042,7 @@ EVT_UPDATE_UI(menu_show_toolbar, wxMaxima::UpdateMenus)
                 EVT_MENU(menu_insert_image, wxMaxima::InsertMenu)
                 EVT_MENU_RANGE(menu_pane_hideall, menu_pane_stats, wxMaxima::ShowPane)
                 EVT_MENU(menu_show_toolbar, wxMaxima::EditMenu)
+                EVT_MENU(MathCtrl::popid_answer_cell, wxMaxima::InsertMenu)
                 EVT_LISTBOX_DCLICK(history_ctrl_id, wxMaxima::HistoryDClick)
                 EVT_LIST_ITEM_ACTIVATED(structure_ctrl_id, wxMaxima::TableOfContentsSelection)
                 EVT_BUTTON(menu_stats_histogram, wxMaxima::StatsMenu)

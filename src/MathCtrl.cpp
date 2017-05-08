@@ -1144,6 +1144,12 @@ void MathCtrl::OnMouseRightDown(wxMouseEvent &event)
       }
       switch (group->GetGroupType())
       {
+        case GC_TYPE_CODE:
+          popupMenu->AppendSeparator();
+          popupMenu->AppendCheckItem(popid_answer_cell, _("Cell can be used as answer"),
+                                      _("If checked this cell is used as an answer to questions"));
+          popupMenu->Check(popid_answer_cell,group->AnswerCell());
+        break;
         case GC_TYPE_TITLE:
           if (group->GetHiddenTree() != NULL)
             popupMenu->Append(popid_unfold,

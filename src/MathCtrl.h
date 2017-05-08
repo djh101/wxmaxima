@@ -814,6 +814,7 @@ public:
     popid_insert_section,
     popid_insert_subsection,
     popid_insert_subsubsection,
+    popid_answer_cell,
     menu_zoom_in,
     menu_zoom_out,
     popid_fold,

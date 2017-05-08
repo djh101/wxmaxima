@@ -42,6 +42,7 @@
 GroupCell::GroupCell(Configuration **config, int groupType, CellPointers *cellPointers, wxString initString) : MathCell(
         this, config)
 {
+  m_answerCell = false;
   m_cellPointers = cellPointers;
   m_inEvaluationQueue = false;
   m_lastInEvaluationQueue = false;
