@@ -33,16 +33,7 @@ that still have to be sent to maxima.
 
 #include "GroupCell.h"
 #include "wx/arrstr.h"
-
-//! A queue element
-class EvaluationQueueElement
-{
-public:
-  EvaluationQueueElement(GroupCell *gr);
-
-  GroupCell *group;
-  EvaluationQueueElement *next;
-};
+#include <list>
 
 //! A simple FIFO queue with manual removal of elements
 class EvaluationQueue
@@ -52,8 +43,8 @@ private:
   int m_size;
   //! The label the user has assigned to the current command.
   wxString m_userLabel;
-  EvaluationQueueElement *m_queue;
-  EvaluationQueueElement *m_last;
+  //! The groupCells in the evaluation Queue.
+  std::list<GroupCell *>m_queue;
 
   //! Adds all commands in commandString as separate tokens to the queue.
   void AddTokens(wxString commandString);
@@ -78,10 +69,10 @@ public:
   //! Is GroupCell gr part of the evaluation queue?
   bool IsLastInQueue(GroupCell *gr)
   {
-    if (m_last == NULL)
+    if (m_queue.empty())
       return false;
     else
-      return (gr == m_last->group);
+      return (gr == m_queue.front());
   }
 
   //! Is GroupCell gr part of the evaluation queue?

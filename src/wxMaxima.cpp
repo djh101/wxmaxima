@@ -1425,6 +1425,7 @@ void wxMaxima::ReadPrompt(wxString &data)
       {
         m_console->m_evaluationQueue.MakeSureIsTopOfQueue(workingGroup);
         m_console->SetWorkingGroup(workingGroup);
+        m_console->SetActiveCell(workingGroup->GetEditable());
       }
     }
   }
@@ -1446,6 +1447,7 @@ void wxMaxima::ReadPrompt(wxString &data)
     m_outputCellsFromCurrentCommand = 0;
     if (m_console->m_evaluationQueue.Empty())
     { // queue empty.
+      std::cerr<<"Empty Queue\n";
       StatusMaximaBusy(waiting);
       if (m_console->FollowEvaluation())
       {
@@ -1484,6 +1486,7 @@ void wxMaxima::ReadPrompt(wxString &data)
       m_console->RequestRedraw();
       StatusMaximaBusy(calculating);
       TryEvaluateNextInQueue();
+      std::cerr<<"Try\n";
     }
 
     if (m_console->m_evaluationQueue.Empty())

@@ -28,22 +28,14 @@
 
 #include "EvaluationQueue.h"
 
-EvaluationQueueElement::EvaluationQueueElement(GroupCell *gr)
-{
-  group = gr;
-  next = NULL;
-}
-
 bool EvaluationQueue::Empty()
 {
-  return (m_queue == NULL) && (m_tokens.IsEmpty());
+  return (m_queue.empty()) && (m_tokens.IsEmpty());
 }
 
 EvaluationQueue::EvaluationQueue()
 {
   m_size = 0;
-  m_queue = NULL;
-  m_last = NULL;
   m_workingGroupChanged = false;
 }
 
@@ -58,97 +50,69 @@ void EvaluationQueue::Clear()
 
 bool EvaluationQueue::IsInQueue(GroupCell *gr)
 {
-  EvaluationQueueElement *tmp = m_queue;
-  while (tmp != NULL)
-  {
-    if (tmp->group == gr)
+  for(std::list<GroupCell *>::iterator it=m_queue.begin(); it != m_queue.end(); ++it)
+    if (*it == gr)
       return true;
-    tmp = tmp->next;
-  }
+  
   return false;
 }
 
 void EvaluationQueue::Remove(GroupCell *gr)
 {
-  if (gr != NULL)
+  bool removeFirst = (gr == m_queue.front());
+  m_queue.remove(gr);
+  if(removeFirst)
   {
-    while ((m_queue != NULL) && (m_queue->group == gr))
-    {
-      EvaluationQueueElement *oldStart = m_queue;
-      m_queue = m_queue->next;
-      delete oldStart;
-    }
-
-    EvaluationQueueElement *tmp = m_queue;
-    while (tmp != NULL)
-    {
-      while ((tmp->next != NULL) && (tmp->next->group == gr))
-      {
-        EvaluationQueueElement *oldNext = tmp->next;
-        tmp->next = tmp->next->next;
-        delete oldNext;
-      }
-
-      tmp = tmp->next;
-    }
+    m_tokens.Clear();
+    if(!m_queue.empty())
+      AddTokens(m_queue.front()->GetEditable()->GetValue());
   }
+  m_size = m_queue.size();
 }
 
 void EvaluationQueue::MakeSureIsTopOfQueue(GroupCell *gr)
 {
-  // don't add cells which can't be evaluated
-  bool emptyWas = Empty();
+  // Don't do anyting if there is no cell to add.
+  if(gr == NULL)
+    return;
+
+  // Don't do anything if the cell we want to add cannot be evaluated
   if (gr->GetGroupType() != GC_TYPE_CODE
       || gr->GetEditable() == NULL) 
     return;
 
   // Don't do anything if the element we want to add is already at the top
   // of the evaluation queue.
-  if(gr == m_queue->group)
+  if(gr == m_queue.front())
     return;
 
-  // Add the new element to the top of the evaluation queue
-  EvaluationQueueElement *newelement = new EvaluationQueueElement(gr);
-  if (emptyWas)
-    m_queue = m_last = newelement;
-  else
-  {
-    EvaluationQueueElement *oldHead = oldHead = m_queue->next;
-    m_queue->next = newelement;
-    newelement->next = oldHead;
-  }
+  // Add the cell to the beginning of the queue.
+  gr->GetEditable()->AddEnding();
+  m_queue.push_front(gr);
   m_size++;
+  m_workingGroupChanged = true;
   m_tokens.Clear();
-  
-  if (emptyWas)
-  {
-    gr->GetEditable()->AddEnding();
-    AddTokens(gr->GetEditable()->GetValue());
-    m_workingGroupChanged = true;
-  }
+  AddTokens(gr->GetEditable()->GetValue());
 }
 
 void EvaluationQueue::AddToQueue(GroupCell *gr)
 {
-  bool emptyWas = Empty();
+  if(gr == NULL)
+    return;
+  
   if (gr->GetGroupType() != GC_TYPE_CODE
       || gr->GetEditable() == NULL) // don't add cells which can't be evaluated
     return;
-  EvaluationQueueElement *newelement = new EvaluationQueueElement(gr);
-  if (m_last == NULL)
-    m_queue = m_last = newelement;
-  else
+
+  gr->GetEditable()->AddEnding();
+
+  if(m_queue.empty())
   {
-    m_last->next = newelement;
-    m_last = newelement;
-  }
-  m_size++;
-  if (emptyWas)
-  {
-    m_queue->group->GetEditable()->AddEnding();
     AddTokens(gr->GetEditable()->GetValue());
     m_workingGroupChanged = true;
   }
+  m_size++;
+  m_queue.push_back(gr);
 }
 
 /**
@@ -178,17 +142,10 @@ void EvaluationQueue::RemoveFirst()
   }
   else
   {
-    if (m_queue == NULL)
-      return; // shouldn't happen
-    EvaluationQueueElement *tmp = m_queue;
-    if (m_queue == m_last)
-    {
-      m_queue = m_last = NULL;
-    }
-    else
-      m_queue = m_queue->next;
+    if(m_queue.empty())
+      return;
 
-    delete tmp;
+    m_queue.pop_front();
     m_size--;
     if (!Empty())
     {
@@ -196,7 +153,6 @@ void EvaluationQueue::RemoveFirst()
       m_workingGroupChanged = true;
     }
   }
-
 }
 
 void EvaluationQueue::AddTokens(wxString commandString)
@@ -311,21 +267,10 @@ void EvaluationQueue::AddTokens(wxString commandString)
 
 GroupCell *EvaluationQueue::GetCell()
 {
-  if (!m_tokens.IsEmpty())
-  {
-    return m_queue->group;
-  }
+  if(m_queue.empty())
+    return NULL;
   else
-  {
-    if (m_queue != NULL)
-    {
-      m_queue->group->GetEditable()->AddEnding();
-      m_queue->group->GetEditable()->ContainsChanges(false);
-      return m_queue->group;
-    }
-    else
-      return NULL; // queue is empty
-  }
+    return m_queue.front();
 }
 
 wxString EvaluationQueue::GetCommand()
