@@ -1381,21 +1381,23 @@ void wxMaxima::ReadPrompt(wxString &data)
   // input for maxima
   if(!takeDataFromWorksheet)
   {
+    // Does the current cell contain maxima input?
     if(m_console->m_evaluationQueue.CommandsLeftInCell() > 1)
     {
       GroupCell *currentCell = dynamic_cast<GroupCell *>(m_console->m_evaluationQueue.GetCell());
       
-      // Does the current evaluation queue entry still contain answers?
-      
+      // Does the current evaluation queue entry still contain answers?      
       if ((currentCell != NULL) && (currentCell->AnswerCell()))
         takeDataFromWorksheet = true;
     }
-    else
+
+    // The current cell doesn't contain answers for maxima =>
+    // Let's determine which one is the next cell in the worksheet:
+    // The next worksheet cell might contain answers without being
+    // in the evaluation queue
+    if(m_console->m_evaluationQueue.CommandsLeftInCell() <= 1)
     {
-      // The current cell doesn't contain answers for maxima =>
-      // Let's determine which one is the next cell in the worksheet:
-      // The next worksheet cell might contain answers without being
-      // in the evaluation queue
+      // Find the cell after the current cell
       GroupCell *workingGroup = m_console->GetWorkingGroup();
       if (workingGroup == NULL)
         workingGroup = m_console->GetLastWorkingGroup();
@@ -1404,12 +1406,10 @@ void wxMaxima::ReadPrompt(wxString &data)
         if (m_console->GetActiveCell())
           workingGroup = dynamic_cast<GroupCell *>(m_console->GetActiveCell()->GetParent());
       }
-
-      // Let's now determine if the next code cell of the worksheet contains
-      // answers.
       if(workingGroup != NULL)
         workingGroup = dynamic_cast<GroupCell *>(workingGroup->m_next);
-      
+
+      // Let's find the next code cell
       while(workingGroup != NULL)
       {
         if(workingGroup->GetGroupType() == GC_TYPE_CODE)
@@ -1424,8 +1424,6 @@ void wxMaxima::ReadPrompt(wxString &data)
       if(takeDataFromWorksheet)
       {
         m_console->m_evaluationQueue.MakeSureIsTopOfQueue(workingGroup);
-        m_console->SetWorkingGroup(workingGroup);
-        m_console->SetActiveCell(workingGroup->GetEditable());
       }
     }
   }
@@ -1447,7 +1445,6 @@ void wxMaxima::ReadPrompt(wxString &data)
     m_outputCellsFromCurrentCommand = 0;
     if (m_console->m_evaluationQueue.Empty())
     { // queue empty.
-      std::cerr<<"Empty Queue\n";
       StatusMaximaBusy(waiting);
       if (m_console->FollowEvaluation())
       {
@@ -1486,7 +1483,6 @@ void wxMaxima::ReadPrompt(wxString &data)
       m_console->RequestRedraw();
       StatusMaximaBusy(calculating);
       TryEvaluateNextInQueue();
-      std::cerr<<"Try\n";
     }
 
     if (m_console->m_evaluationQueue.Empty())

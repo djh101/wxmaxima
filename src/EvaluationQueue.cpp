@@ -1,8 +1,8 @@
 ﻿// -*- mode: c++; c-file-style: "linux"; c-basic-offset: 2; indent-tabs-mode: nil -*-
 //
-//  Copyright (C) 2009 Ziga Lenarcic <zigalenarcic@users.sourceforge.net>
-//            (C) 2012 Doug Ilijev <doug.ilijev@gmail.com>
-//            (C) 2015 Gunter Königsmann <wxMaxima@physikbuch.de>
+//  Copyright (C) 2009      Ziga Lenarcic <zigalenarcic@users.sourceforge.net>
+//            (C) 2012      Doug Ilijev <doug.ilijev@gmail.com>
+//            (C) 2015-2017 Gunter Königsmann <wxMaxima@physikbuch.de>
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -71,7 +71,7 @@ void EvaluationQueue::Remove(GroupCell *gr)
 }
 
 void EvaluationQueue::MakeSureIsTopOfQueue(GroupCell *gr)
-{
+{  
   // Don't do anyting if there is no cell to add.
   if(gr == NULL)
     return;
@@ -88,11 +88,20 @@ void EvaluationQueue::MakeSureIsTopOfQueue(GroupCell *gr)
 
   // Add the cell to the beginning of the queue.
   gr->GetEditable()->AddEnding();
+
+  // The cell that contained the command we sent to maxima last is still
+  // at the head of the evaluation queue => We need to push to the cell
+  // after the head.
+  GroupCell *oldHead = NULL;
+  if(!m_queue.empty())
+  {
+    oldHead = m_queue.front();
+    m_queue.pop_front();
+  }
   m_queue.push_front(gr);
+  if(oldHead != NULL)
+    m_queue.push_front(oldHead);
   m_size++;
-  m_workingGroupChanged = true;
-  m_tokens.Clear();
-  AddTokens(gr->GetEditable()->GetValue());
 }
 
 void EvaluationQueue::AddToQueue(GroupCell *gr)
