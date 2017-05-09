@@ -68,7 +68,10 @@ public:
   //! Does this GroupCell contain the answer to a question?
   bool AnswerCell(){return m_answerCell;}
   //! Does this GroupCell contain the answer to a question?
-  void AnswerCell(bool answerIs){m_answerCell = answerIs;}
+  void AnswerCell(bool answerIs){
+    m_answerCell = answerIs;
+    if(GetEditable() != NULL) GetEditable()->AnswerCell(answerIs);
+  }
   /*! Tell this cell to remove it from all gui actions.
 
     Normally the gui keeps various pointers to a cell: The cell below the cursor,

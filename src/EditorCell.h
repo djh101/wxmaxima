@@ -99,6 +99,9 @@ public:
 
   ~EditorCell();
 
+  //! May this Editor Cell contain the answer to a question?
+  void AnswerCell(bool answerIs){m_answerCell = answerIs;}
+
   //! Which cell the blinking cursor is in?
   EditorCell *GetActiveCell()
   { return dynamic_cast<EditorCell *>(m_cellPointers->m_activeCell); }
@@ -518,6 +521,8 @@ public:
   }
 
 private:
+  //! Mark this cell as "potentially containing answers".
+  bool m_answerCell;
   /*! Divide a string into tokens
 
     Used when styling text.
