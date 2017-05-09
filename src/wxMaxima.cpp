@@ -6273,7 +6273,10 @@ void wxMaxima::TryEvaluateNextInQueue()
 
   // We don't want to evaluate a new cell if the user still has to answer
   // a question.
-  if (m_console->QuestionPending())
+  if (
+    (m_console->QuestionPending()) &&
+    (!(m_console->m_evaluationQueue.GetCell()->AnswerCell()))
+    )
     return;
 
   // Maxima is connected and the queue contains an item.
