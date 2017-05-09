@@ -2558,7 +2558,9 @@ void MathCtrl::OpenHCaret(wxString txt, int type)
     }
   }
   InsertGroupCells(group, m_hCaretPosition);
-
+  if (GCContainsCurrentQuestion(dynamic_cast<GroupCell *>(group->m_previous)))
+    group->AnswerCell(true);
+  
   // activate editor
   SetActiveCell(group->GetEditable(), false);
   if (GetActiveCell() != NULL)
