@@ -190,7 +190,22 @@ wxString EditorCell::ToRTF()
 
         if (textSnippet->StyleSet())
         {
+          Configuration *configuration = (*m_configuration);
           retval += wxString::Format(wxT("\\cf%i "), (int) textSnippet->GetStyle());
+          if(!m_answerCell)
+          {
+            if(configuration->IsItalic(m_textStyle) == wxFONTSTYLE_SLANT)
+              retval += wxT("\\i ");
+            else
+              retval += wxT("\\i0");
+          }
+          else
+          {
+            if(configuration->IsItalic(m_textStyle) == wxFONTSTYLE_SLANT)
+              retval += wxT("\\i0");
+            else
+              retval += wxT("\\i");
+          }
           retval += RTFescape(textSnippet->GetText());
         }
         else
@@ -476,7 +491,7 @@ wxString EditorCell::ToHTML()
 {
   EditorCell *tmp = this;
   wxString retval;
-
+  
   while (tmp != NULL)
   {
     for (std::vector<StyledText>::iterator textSnippet = m_styledText.begin();
@@ -519,6 +534,8 @@ wxString EditorCell::ToHTML()
     }
     tmp = dynamic_cast<EditorCell *>(tmp->m_next);
   }
+  if(m_answerCell)
+    retval += wxT("<i>") + retval + wxT("</i>");
   retval.Replace(wxT("\xa0"), wxT("&nbsp;"));
   return retval;
 }
