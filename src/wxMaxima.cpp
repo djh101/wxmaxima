@@ -6026,11 +6026,14 @@ void wxMaxima::EvaluateEvent(wxCommandEvent &event)
   if (!evaluating)
     m_console->FollowEvaluation(true);
   EditorCell *tmp = m_console->GetActiveCell();
-  if (m_console->QuestionPending())
-    evaluating = true;
 
   if (tmp != NULL) // we have an active cell
   {
+    if (
+      (!dynamic_cast<GroupCell *>(tmp->GetParent())->AnswerCell()) &&
+      (m_console->QuestionPending())
+      )
+      evaluating = true;
     if (tmp->GetType() == MC_TYPE_INPUT && !m_inLispMode)
       tmp->AddEnding();
     // if active cell is part of a working group, we have a special
@@ -6050,6 +6053,11 @@ void wxMaxima::EvaluateEvent(wxCommandEvent &event)
   }
   else
   { // no evaluate has been called on no active cell?
+    if ((m_console->QuestionPending()) &&
+        !((m_console->GetSelectionStart()->GetType() == MC_TYPE_GROUP) &&
+          (dynamic_cast<GroupCell *>(m_console->GetSelectionStart())->AnswerCell()))
+      )
+      evaluating = true;
     m_console->AddSelectionToEvaluationQueue();
   }
   // Inform the user about the length of the evaluation queue.
