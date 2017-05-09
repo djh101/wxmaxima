@@ -6025,34 +6025,43 @@ void wxMaxima::EvaluateEvent(wxCommandEvent &event)
   bool evaluating = !m_console->m_evaluationQueue.Empty();
   if (!evaluating)
     m_console->FollowEvaluation(true);
-  EditorCell *tmp = m_console->GetActiveCell();
-
-  if (tmp != NULL) // we have an active cell
+  EditorCell *editor = m_console->GetActiveCell();
+  GroupCell *group = NULL;
+  if(editor != NULL) group = dynamic_cast<GroupCell *>(editor->GetParent());
+  if (editor != NULL) // we have an active cell
   {
-    if (
-      (!dynamic_cast<GroupCell *>(tmp->GetParent())->AnswerCell()) &&
-      (m_console->QuestionPending())
-      )
+    std::cerr<<"group="<<group->ToString()<<"\n";
+    std::cerr<<"answr="<<group->AnswerCell()<<"\n";
+    if (m_console->QuestionPending())
+    {
       evaluating = true;
-    if (tmp->GetType() == MC_TYPE_INPUT && !m_inLispMode)
-      tmp->AddEnding();
+      if(group->AnswerCell())
+      {
+        m_console->m_evaluationQueue.MakeSureIsTopOfQueue(group);
+        TryEvaluateNextInQueue();
+        return;
+      }
+    }
+
+    if (editor->GetType() == MC_TYPE_INPUT && !m_inLispMode)
+      editor->AddEnding();
     // if active cell is part of a working group, we have a special
     // case - answering a question. Manually send answer to Maxima.
-    GroupCell *cell = dynamic_cast<GroupCell *>(tmp->GetParent());
-    if (m_console->GCContainsCurrentQuestion(cell))
+    if (m_console->GCContainsCurrentQuestion(group))
     {
-      SendMaxima(tmp->ToString(true), true);
+      SendMaxima(editor->ToString(true), true);
       StatusMaximaBusy(calculating);
       m_console->QuestionAnswered();
     }
     else
     { // normally just add to queue (and mark the cell as no more containing an error message)
-      m_console->m_cellPointers->m_errorList.Remove(cell);
-      m_console->AddCellToEvaluationQueue(cell);
+      m_console->m_cellPointers->m_errorList.Remove(group);
+      m_console->AddCellToEvaluationQueue(group);
     }
   }
   else
-  { // no evaluate has been called on no active cell?
+  { // no evaluate has been called or no active cell?
+    std::cerr<<"No\n";
     if ((m_console->QuestionPending()) &&
         !((m_console->GetSelectionStart()->GetType() == MC_TYPE_GROUP) &&
           (dynamic_cast<GroupCell *>(m_console->GetSelectionStart())->AnswerCell()))
@@ -6217,6 +6226,7 @@ wxString wxMaxima::GetUnmatchedParenthesisState(wxString text)
 // Calling this function should not do anything dangerous
 void wxMaxima::TryEvaluateNextInQueue()
 {
+  std::cerr<<"test1\n";
   if (!m_isConnected)
   {
     if (!StartMaxima())
@@ -6230,6 +6240,7 @@ void wxMaxima::TryEvaluateNextInQueue()
     }
     return;
   }
+  std::cerr<<"test2\n";
 
   // Initialize maxima if necessary.
   if (!m_variablesOK)
@@ -6238,6 +6249,7 @@ void wxMaxima::TryEvaluateNextInQueue()
     SetupVariables();
     return;
   }
+  std::cerr<<"test3\n";
 
   // Maxima is connected. Let's test if the evaluation queue is empty.
   GroupCell *tmp = dynamic_cast<GroupCell *>(m_console->m_evaluationQueue.GetCell());
@@ -6267,6 +6279,7 @@ void wxMaxima::TryEvaluateNextInQueue()
 
     return; //empty queue
   }
+  std::cerr<<"test4\n";
 
   // Display the evaluation queue's status.
   EvaluationQueueLength(m_console->m_evaluationQueue.Size(), m_console->m_evaluationQueue.CommandsLeftInCell());
@@ -6278,6 +6291,7 @@ void wxMaxima::TryEvaluateNextInQueue()
     (!(m_console->m_evaluationQueue.GetCell()->AnswerCell()))
     )
     return;
+  std::cerr<<"test5\n";
 
   // Maxima is connected and the queue contains an item.
 
@@ -6305,6 +6319,7 @@ void wxMaxima::TryEvaluateNextInQueue()
     m_console->Recalculate(tmp);
     m_console->RequestRedraw();
   }
+  std::cerr<<"testa\n";
 
   wxString text = m_console->m_evaluationQueue.GetCommand();
   if ((text != wxEmptyString) && (text != wxT(";")) && (text != wxT("$")))
