@@ -1040,6 +1040,8 @@ void MathCtrl::OnMouseRightDown(wxMouseEvent &event)
           popupMenu->Append(popid_evaluate_section, _("Evaluate Sub-Subsection\tShift+Ctrl+Enter"), wxEmptyString,
                             wxITEM_NORMAL);
         }
+        popupMenu->AppendCheckItem(popid_answer_cell, _("Cell can be used as answer"),
+                                   _("If checked this cell is used as an answer to questions"));
       }
 
       else
