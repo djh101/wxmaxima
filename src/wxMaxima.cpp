@@ -6324,8 +6324,8 @@ void wxMaxima::InsertMenu(wxCommandEvent &event)
       if((m_console->GetActiveCell() != NULL) &&
          (dynamic_cast<GroupCell *>(m_console->GetActiveCell()->GetParent())->GetGroupType() == GC_TYPE_CODE))
         dynamic_cast<GroupCell *>(m_console->GetActiveCell()->GetParent())->AutoAnswer(event.IsChecked());
-      if((m_console->GetSelectionStart() != NULL)&&
-         (m_console->GetSelectionStart()->GetType() == MC_TYPE_GROUP))
+      else if((m_console->GetSelectionStart() != NULL)&&
+              (m_console->GetSelectionStart()->GetType() == MC_TYPE_GROUP))
       {
         GroupCell *gc = dynamic_cast<GroupCell *>(m_console->GetSelectionStart());
         while(gc != NULL)
@@ -6337,8 +6337,8 @@ void wxMaxima::InsertMenu(wxCommandEvent &event)
             break;
           gc = dynamic_cast<GroupCell *>(gc->m_next);
         }
-        m_console->RequestRedraw();
       }
+      m_console->RequestRedraw();
       return;
       break;
     case menu_insert_previous_output:
