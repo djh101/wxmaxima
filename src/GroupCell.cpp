@@ -1392,7 +1392,12 @@ wxString GroupCell::ToXML()
       for(std::list<wxString>::iterator it = m_knownAnswers.begin(); it != m_knownAnswers.end();++it)
       {
         i++;
-        str += wxString::Format(wxT(" answer%i=\""),i) + MathCell::XMLescape(*it) + wxT("\"");
+        // In theory the attribute should be saved and read verbatim, with the exception
+        // of the characters XML wants to be quoted. In reality wxWidget's newline handling
+        // seems to be broken => escape newlines.
+        wxString answer = MathCell::XMLescape(*it);
+        answer.Replace(wxT("\n"),wxT("&#10;"));
+        str += wxString::Format(wxT(" answer%i=\""),i) + answer + wxT("\"");
       }
       if(m_autoAnswer)
         str += wxT(" auto_answer=\"yes\"");
