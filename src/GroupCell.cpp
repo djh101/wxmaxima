@@ -1392,7 +1392,7 @@ wxString GroupCell::ToXML()
       for(std::list<wxString>::iterator it = m_knownAnswers.begin(); it != m_knownAnswers.end();++it)
       {
         i++;
-        str += wxString::Format(wxT(" answer%i=\"")) + MathCell::XMLescape(*it) + wxT("\"");
+        str += wxString::Format(wxT(" answer%i=\""),i) + MathCell::XMLescape(*it) + wxT("\"");
       }
       break;
     }

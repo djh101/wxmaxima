@@ -6340,6 +6340,7 @@ void wxMaxima::InsertMenu(wxCommandEvent &event)
         m_console->RequestRedraw();
       }
       return;
+      break;
     case menu_insert_previous_output:
       output = true;
     case MathCtrl::popid_insert_input:
