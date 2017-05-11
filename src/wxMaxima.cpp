@@ -6338,6 +6338,7 @@ void wxMaxima::InsertMenu(wxCommandEvent &event)
           gc = dynamic_cast<GroupCell *>(gc->m_next);
         }
       }
+      m_fileSaved = false;
       m_console->RequestRedraw();
       return;
       break;
