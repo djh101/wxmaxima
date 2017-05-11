@@ -47,7 +47,10 @@ private:
   std::list<GroupCell *>m_queue;
 
   //! Adds all commands in commandString as separate tokens to the queue.
-  void AddTokens(wxString commandString);
+  void AddTokens(GroupCell *cell);
+
+  //! A list of answers provided by the user
+  std::list<wxString> m_knownAnswers;
 
 public:
   /*! Query for the label the user has assigned to the current command.  
@@ -81,17 +84,17 @@ public:
   //! Adds a GroupCell to the evaluation queue.
   void AddToQueue(GroupCell *gr);
 
-  //! Makes sure a specific groupcell is the next one that is evaluated.
-  void MakeSureIsTopOfQueue(GroupCell *gr);
-
   //! Remove a GroupCell from the evaluation queue.
   void Remove(GroupCell *gr);
-
+  
   //! Adds all hidden cells attached to the GroupCell gr to the evaluation queue.
   void AddHiddenTreeToQueue(GroupCell *gr);
 
-  //! Removes the first cell in the queue
+  //! Removes the first command in the queue
   void RemoveFirst();
+
+  //! Removes the first answer in the queue
+  void RemoveFirstAnswer(){m_knownAnswers.pop_front();}
 
   /*! Gets the cell the next command in the queue belongs to
 
@@ -102,11 +105,23 @@ public:
   //! Is the queue empty?
   bool Empty();
 
+  //! Is the answer queue empty?
+  bool AnswersEmpty() {return m_knownAnswers.empty();}
+
   //! Clear the queue
   void Clear();
 
   //! Return the next command that needs to be evaluated.
   wxString GetCommand();
+  
+  //! Return the next known answer.
+  wxString GetAnswer()
+  {
+    if(!m_knownAnswers.empty())
+      return (m_knownAnswers.front());
+    else
+      return wxEmptyString;
+  }
 
   //! Get the size of the queue
   int Size()

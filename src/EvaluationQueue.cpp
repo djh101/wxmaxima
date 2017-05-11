@@ -65,42 +65,9 @@ void EvaluationQueue::Remove(GroupCell *gr)
   {
     m_tokens.Clear();
     if(!m_queue.empty())
-      AddTokens(m_queue.front()->GetEditable()->GetValue());
+      AddTokens(gr);
   }
   m_size = m_queue.size();
-}
-
-void EvaluationQueue::MakeSureIsTopOfQueue(GroupCell *gr)
-{  
-  // Don't do anyting if there is no cell to add.
-  if(gr == NULL)
-    return;
-
-  // Don't do anything if the cell we want to add cannot be evaluated
-  if (gr->GetGroupType() != GC_TYPE_CODE
-      || gr->GetEditable() == NULL) 
-    return;
-
-  // Add the cell to the beginning of the queue.
-  gr->GetEditable()->AddEnding();
-
-  // The cell that contained the command we sent to maxima last is still
-  // at the head of the evaluation queue => We need to push to the cell
-  // after the head.
-  GroupCell *oldHead = NULL;
-  if(!m_queue.empty())
-  {
-    oldHead = m_queue.front();
-    m_queue.pop_front();
-  }
-  // Only push the new element if it isn't already at the place we want
-  // to put it.
-  if(gr != m_queue.front())
-    m_queue.push_front(gr);
-  
-  if(oldHead != NULL)
-    m_queue.push_front(oldHead);
-  m_size++;
 }
 
 void EvaluationQueue::AddToQueue(GroupCell *gr)
@@ -116,7 +83,7 @@ void EvaluationQueue::AddToQueue(GroupCell *gr)
 
   if(m_queue.empty())
   {
-    AddTokens(gr->GetEditable()->GetValue());
+    AddTokens(gr);
     m_workingGroupChanged = true;
   }
   m_size++;
@@ -157,16 +124,21 @@ void EvaluationQueue::RemoveFirst()
     m_size--;
     if (!Empty())
     {
-      AddTokens(GetCell()->GetEditable()->GetValue());
+      AddTokens(GetCell());
       m_workingGroupChanged = true;
     }
   }
 }
 
-void EvaluationQueue::AddTokens(wxString commandString)
+void EvaluationQueue::AddTokens(GroupCell *cell)
 {
+  if(cell == NULL)
+    return;
+  
+  wxString commandString = cell->GetEditable()->GetValue();
   size_t index = 0;
 
+  m_knownAnswers = cell->m_knownAnswers;
 
   wxString token;
 

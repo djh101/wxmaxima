@@ -770,7 +770,6 @@ void wxMaxima::ClientEvent(wxSocketEvent &event)
 
           // The prompt that tells us that maxima awaits the next command
           ReadPrompt(m_currentOutput);
-
         }
       }
       break;
@@ -1359,13 +1358,11 @@ void wxMaxima::ReadPrompt(wxString &data)
   else
     o = data.SubString(begin + m_promptPrefix.Length(), end - 1);
 
-  // If this was an input prompt we want to take the data for maxima
-  // from the worksheet. 
-  //
   // Input prompts have a length > 0 and end in a number followed by a ")".
   // They also begin with a "(". Questions (hopefully)
   // don't do that; Lisp prompts look like question prompts.
-  bool takeDataFromWorksheet = (
+  if (
+          (
                   (o.Length() > 3) &&
                   (o[o.Length() - 3] >= (wxT('0'))) &&
                   (o[o.Length() - 3] <= (wxT('9'))) &&
@@ -1374,61 +1371,8 @@ void wxMaxima::ReadPrompt(wxString &data)
           ) ||
           m_inLispMode ||
           (o.StartsWith(wxT("MAXIMA>"))) ||
-          (o.StartsWith(wxT("\nMAXIMA>")));
-
-  // If we don't have an input prompt perhaps the cell that follows our cell
-  // contains input for maxima. Or perhaps the current cell still contains
-  // input for maxima
-  if(!takeDataFromWorksheet)
-  {
-    // Does the current cell contain maxima input?
-    if(m_console->m_evaluationQueue.CommandsLeftInCell() > 1)
-    {
-      GroupCell *currentCell = dynamic_cast<GroupCell *>(m_console->m_evaluationQueue.GetCell());
-      
-      // Does the current evaluation queue entry still contain answers?      
-      if ((currentCell != NULL) && (currentCell->AnswerCell()))
-        takeDataFromWorksheet = true;
-    }
-
-    // The current cell doesn't contain answers for maxima =>
-    // Let's determine which one is the next cell in the worksheet:
-    // The next worksheet cell might contain answers without being
-    // in the evaluation queue
-    if(m_console->m_evaluationQueue.CommandsLeftInCell() <= 1)
-    {
-      // Find the cell after the current cell
-      GroupCell *workingGroup = m_console->GetWorkingGroup();
-      if (workingGroup == NULL)
-        workingGroup = m_console->GetLastWorkingGroup();
-      if (workingGroup == NULL)
-      {
-        if (m_console->GetActiveCell())
-          workingGroup = dynamic_cast<GroupCell *>(m_console->GetActiveCell()->GetParent());
-      }
-      if(workingGroup != NULL)
-        workingGroup = dynamic_cast<GroupCell *>(workingGroup->m_next);
-
-      // Let's find the next code cell
-      while(workingGroup != NULL)
-      {
-        if(workingGroup->GetGroupType() == GC_TYPE_CODE)
-        {
-          takeDataFromWorksheet = workingGroup->AnswerCell();
-          break;
-        }
-        workingGroup = dynamic_cast<GroupCell *>(workingGroup->m_next);
-      }
-
-      // Make sure that our answer cell is the next cell in the evaluation queue.
-      if(takeDataFromWorksheet)
-      {
-        m_console->m_evaluationQueue.MakeSureIsTopOfQueue(workingGroup);
-      }
-    }
-  }
-
-  if (takeDataFromWorksheet)
+          (o.StartsWith(wxT("\nMAXIMA>")))
+          )
   {
     o.Trim(true);
     o.Trim(false);
@@ -1519,7 +1463,9 @@ void wxMaxima::ReadPrompt(wxString &data)
         m_console->m_mainToolBar->EnableTool(ToolBar::tb_follow, true);
     }
     else
+    {
       m_console->OpenQuestionCaret();
+    }
     StatusMaximaBusy(userinput);
   }
 
@@ -2928,13 +2874,6 @@ void wxMaxima::UpdateMenus(wxUpdateUIEvent &event)
     menubar->Enable(MathCtrl::popid_divide_cell, m_console->GetActiveCell() != NULL);
     menubar->Enable(MathCtrl::popid_merge_cells, m_console->CanMergeSelection());
     menubar->Enable(wxID_PRINT, true);
-    bool enableAnswer = (m_console->GetActiveCell() != NULL) &&
-      (dynamic_cast<GroupCell *>(m_console->GetActiveCell()->GetParent())->GetGroupType() == GC_TYPE_CODE);
-    menubar->Enable(MathCtrl::popid_answer_cell,
-                    enableAnswer);
-    if(enableAnswer)
-      menubar->Check(MathCtrl::popid_answer_cell,
-                     dynamic_cast<GroupCell *>(m_console->GetActiveCell()->GetParent())->AnswerCell());
   }
   else
   {
@@ -6025,63 +5964,40 @@ void wxMaxima::EvaluateEvent(wxCommandEvent &event)
   bool evaluating = !m_console->m_evaluationQueue.Empty();
   if (!evaluating)
     m_console->FollowEvaluation(true);
-  EditorCell *editor = m_console->GetActiveCell();
-  GroupCell *group = NULL;
-  if(editor != NULL) group = dynamic_cast<GroupCell *>(editor->GetParent());
-  if (editor != NULL) // we have an active cell
-  {
-    if (m_console->QuestionPending())
-    {
-      evaluating = true;
-      if((group->AnswerCell())&&(m_console->m_evaluationQueue.CommandsLeftInCell() == 1))
-      {
-        std::cerr<<"answr\n";
-        // Add this command to the queue.
-        m_console->m_evaluationQueue.MakeSureIsTopOfQueue(group);
-        // Remove the command that caused the question from the queue.
-        std::cerr<<"OldCmd="<<m_console->m_evaluationQueue.GetCommand()<<"\n";
-        m_console->m_evaluationQueue.RemoveFirst();
-        m_console->QuestionAnswered();
-        m_console->SetWorkingGroup(group);
-        wxString command = m_console->m_evaluationQueue.GetCommand();
-        std::cerr<<"command=\""<<command<<"\"\n";
-        m_xmlInspector->Add(wxT("\n\nANSWER TO MAXIMA:\n\n"));
-        m_xmlInspector->Add(command);
-        m_xmlInspector->Add(wxT("\n\n\nMAXIMA RESPONSE:\n\n"));
-        SendMaxima(command);
-        return;
-      }
-    }
+  EditorCell *tmp = m_console->GetActiveCell();
+  if (m_console->QuestionPending())
+    evaluating = true;
 
-    if (editor->GetType() == MC_TYPE_INPUT && !m_inLispMode)
-      editor->AddEnding();
+  if (tmp != NULL) // we have an active cell
+  {
+    if (tmp->GetType() == MC_TYPE_INPUT && !m_inLispMode)
+      tmp->AddEnding();
     // if active cell is part of a working group, we have a special
     // case - answering a question. Manually send answer to Maxima.
-    if (m_console->GCContainsCurrentQuestion(group))
+    GroupCell *cell = dynamic_cast<GroupCell *>(tmp->GetParent());
+    if (m_console->GCContainsCurrentQuestion(cell))
     {
-      SendMaxima(editor->ToString(true), true);
+      wxString answer = tmp->ToString(true);
+      if(m_console->m_answersExhausted)
+        cell->AddAnswer(answer);
+      SendMaxima(answer, true);
       StatusMaximaBusy(calculating);
       m_console->QuestionAnswered();
     }
     else
     { // normally just add to queue (and mark the cell as no more containing an error message)
-      m_console->m_cellPointers->m_errorList.Remove(group);
-      m_console->AddCellToEvaluationQueue(group);
+      m_console->m_cellPointers->m_errorList.Remove(cell);
+      m_console->AddCellToEvaluationQueue(cell);
     }
   }
   else
-  { // no evaluate has been called or no active cell?
-    if ((m_console->QuestionPending()) &&
-        !((m_console->GetSelectionStart()->GetType() == MC_TYPE_GROUP) &&
-          (dynamic_cast<GroupCell *>(m_console->GetSelectionStart())->AnswerCell()))
-      )
-      evaluating = true;
+  { // no evaluate has been called on no active cell?
     m_console->AddSelectionToEvaluationQueue();
   }
   // Inform the user about the length of the evaluation queue.
   EvaluationQueueLength(m_console->m_evaluationQueue.Size(), m_console->m_evaluationQueue.CommandsLeftInCell());
   if (!evaluating)
-    TryEvaluateNextInQueue();
+    TryEvaluateNextInQueue();;
 }
 
 wxString wxMaxima::GetUnmatchedParenthesisState(wxString text)
@@ -6291,10 +6207,7 @@ void wxMaxima::TryEvaluateNextInQueue()
 
   // We don't want to evaluate a new cell if the user still has to answer
   // a question.
-  if (
-    (m_console->QuestionPending()) &&
-    (!(m_console->m_evaluationQueue.GetCell()->AnswerCell()))
-    )
+  if (m_console->QuestionPending())
     return;
 
   // Maxima is connected and the queue contains an item.
@@ -6351,6 +6264,7 @@ void wxMaxima::TryEvaluateNextInQueue()
         m_xmlInspector->Add(text);
         m_xmlInspector->Add(wxT("\n\n\nMAXIMA RESPONSE:\n\n"));
       }
+
       SendMaxima(text, true);
       EvaluationQueueLength(m_console->m_evaluationQueue.Size(),
                             m_console->m_evaluationQueue.CommandsLeftInCell()
@@ -6396,6 +6310,8 @@ void wxMaxima::TryEvaluateNextInQueue()
     m_outputCellsFromCurrentCommand = 0;
     TryEvaluateNextInQueue();
   }
+  m_console->m_answersExhausted = m_console->m_evaluationQueue.AnswersEmpty();
+
 }
 
 void wxMaxima::InsertMenu(wxCommandEvent &event)
@@ -6404,10 +6320,10 @@ void wxMaxima::InsertMenu(wxCommandEvent &event)
   bool output = false;
   switch (event.GetId())
   {
-    case MathCtrl::popid_answer_cell:
+    case MathCtrl::popid_auto_answer:
       if((m_console->GetActiveCell() != NULL) &&
          (dynamic_cast<GroupCell *>(m_console->GetActiveCell()->GetParent())->GetGroupType() == GC_TYPE_CODE))
-        dynamic_cast<GroupCell *>(m_console->GetActiveCell()->GetParent())->AnswerCell(event.IsChecked());
+        dynamic_cast<GroupCell *>(m_console->GetActiveCell()->GetParent())->AutoAnswer(event.IsChecked());
       if((m_console->GetSelectionStart() != NULL)&&
          (m_console->GetSelectionStart()->GetType() == MC_TYPE_GROUP))
       {
@@ -6415,7 +6331,7 @@ void wxMaxima::InsertMenu(wxCommandEvent &event)
         while(gc != NULL)
         {
           if(gc->GetGroupType() == GC_TYPE_CODE)
-            gc->AnswerCell(event.IsChecked());
+            gc->AutoAnswer(event.IsChecked());
 
           if(gc == m_console->GetSelectionEnd())
             break;
@@ -7140,7 +7056,7 @@ EVT_UPDATE_UI(menu_show_toolbar, wxMaxima::UpdateMenus)
                 EVT_MENU(menu_insert_image, wxMaxima::InsertMenu)
                 EVT_MENU_RANGE(menu_pane_hideall, menu_pane_stats, wxMaxima::ShowPane)
                 EVT_MENU(menu_show_toolbar, wxMaxima::EditMenu)
-                EVT_MENU(MathCtrl::popid_answer_cell, wxMaxima::InsertMenu)
+                EVT_MENU(MathCtrl::popid_auto_answer, wxMaxima::InsertMenu)
                 EVT_LISTBOX_DCLICK(history_ctrl_id, wxMaxima::HistoryDClick)
                 EVT_LIST_ITEM_ACTIVATED(structure_ctrl_id, wxMaxima::TableOfContentsSelection)
                 EVT_BUTTON(menu_stats_histogram, wxMaxima::StatsMenu)

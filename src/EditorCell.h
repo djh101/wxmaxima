@@ -100,7 +100,7 @@ public:
   ~EditorCell();
 
   //! May this Editor Cell contain the answer to a question?
-  void AnswerCell(bool answerIs){m_answerCell = answerIs;}
+  void AutoAnswer(bool autoAnswer){m_autoAnswer = autoAnswer;}
 
   //! Which cell the blinking cursor is in?
   EditorCell *GetActiveCell()
@@ -521,8 +521,8 @@ public:
   }
 
 private:
-  //! Mark this cell as "potentially containing answers".
-  bool m_answerCell;
+  //! Mark this cell as "Automatically answer questions".
+  bool m_autoAnswer;
   /*! Divide a string into tokens
 
     Used when styling text.

@@ -42,7 +42,7 @@
 GroupCell::GroupCell(Configuration **config, int groupType, CellPointers *cellPointers, wxString initString) : MathCell(
         this, config)
 {
-  m_answerCell = false;
+  m_autoAnswer = false;
   m_cellPointers = cellPointers;
   m_inEvaluationQueue = false;
   m_lastInEvaluationQueue = false;
@@ -201,12 +201,11 @@ MathCell *GroupCell::Copy()
   GroupCell *tmp = new GroupCell(m_configuration, m_groupType, m_cellPointers);
   tmp->Hide(m_hide);
   CopyData(this, tmp);
+  tmp->AutoAnswer(m_autoAnswer);
   if (m_inputLabel)
     tmp->SetInput(m_inputLabel->CopyList());
   if (m_output != NULL)
     tmp->SetOutput(m_output->CopyList());
-  if (m_answerCell)
-    tmp->AnswerCell(true);
 
   return tmp;
 }
@@ -222,22 +221,25 @@ wxString GroupCell::ToWXM(bool wxm)
   {
     case GC_TYPE_CODE:
       if(wxm)
-      {
-        if(m_answerCell)
-          retval += wxT("/* [wxMaxima: answer  start ] */\n");
-        else
-          retval += wxT("/* [wxMaxima: input   start ] */\n");
-      }
+        retval += wxT("/* [wxMaxima: input   start ] */\n");
       retval += GetEditable()->ToString() + wxT("\n");
       if(wxm)
-      {
-        if(m_answerCell)
-          retval += wxT("/* [wxMaxima: answer  end   ] */\n");
-        else
-          retval += wxT("/* [wxMaxima: input   end   ] */\n");
-      }          
+        retval += wxT("/* [wxMaxima: input   end   ] */\n");
       else
         trailingNewline = false;
+
+      // Export the list of known answers
+      if(wxm)
+      {
+        for(std::list<wxString>::iterator it = m_knownAnswers.begin(); it != m_knownAnswers.end();++it)
+        {
+          retval += wxT("/* [wxMaxima: answer  start ] */\n");
+          retval += *it + wxT("\n");
+          retval += wxT("/* [wxMaxima: answer  end   ] */\n");
+        }
+        if (m_autoAnswer)
+          retval += wxT("/* [wxMaxima: autoanswer    ] */\n");
+      }
       break;
     case GC_TYPE_TEXT:
       if(wxm)
@@ -1386,9 +1388,13 @@ wxString GroupCell::ToXML()
     case GC_TYPE_CODE:
     {
       str += wxT(" type=\"code\"");
-      if(AnswerCell())
-        str += wxT(" answer=\"yes\"");
-        break;
+      int i = 0;
+      for(std::list<wxString>::iterator it = m_knownAnswers.begin(); it != m_knownAnswers.end();++it)
+      {
+        i++;
+        str += wxString::Format(wxT(" answer%i=\"")) + MathCell::XMLescape(*it) + wxT("\"");
+      }
+      break;
     }
     case GC_TYPE_IMAGE:
       str += wxT(" type=\"image\"");

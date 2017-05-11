@@ -534,7 +534,7 @@ void wxMaximaFrame::SetupMenu()
   m_Edit_Zoom_Sub->Append(menu_zoom_100, wxT("100%"), _("Set zoom to 100%"), wxITEM_NORMAL);
   m_Edit_Zoom_Sub->Append(menu_zoom_120, wxT("120%"), _("Set zoom to 120%"), wxITEM_NORMAL);
   m_Edit_Zoom_Sub->Append(menu_zoom_150, wxT("150%"), _("Set zoom to 150%"), wxITEM_NORMAL);
-  m_Edit_Zoom_Sub->Append(menu_zoom_200, wxT("200%"), _("Set zvoom to 200%"), wxITEM_NORMAL);
+  m_Edit_Zoom_Sub->Append(menu_zoom_200, wxT("200%"), _("Set zoom to 200%"), wxITEM_NORMAL);
   m_Edit_Zoom_Sub->Append(menu_zoom_300, wxT("300%"), _("Set zoom to 300%"), wxITEM_NORMAL);
 
   m_Maxima_Panes_Sub->Append(wxNewId(), _("Set Zoom"), m_Edit_Zoom_Sub, _("Set Zoom"));
@@ -600,8 +600,8 @@ void wxMaximaFrame::SetupMenu()
   m_CellMenu->Append(MathCtrl::popid_divide_cell, _("Divide Cell\tCtrl+D"),
                      _("Divide this input cell into two cells"), wxITEM_NORMAL);
   m_CellMenu->AppendSeparator();
-  m_CellMenu->AppendCheckItem(MathCtrl::popid_answer_cell, _("Cell can be used as answer"),
-                     _("If checked this cell is used as an answer to questions"));
+  m_CellMenu->AppendCheckItem(MathCtrl::popid_auto_answer, _("Automatically answer questions"),
+                     _(""));
 
   m_MenuBar->Append(m_CellMenu, _("Ce&ll"));
 
