@@ -1394,6 +1394,8 @@ wxString GroupCell::ToXML()
         i++;
         str += wxString::Format(wxT(" answer%i=\""),i) + MathCell::XMLescape(*it) + wxT("\"");
       }
+      if(m_autoAnswer)
+        str += wxT(" auto_answer=\"yes\"");
       break;
     }
     case GC_TYPE_IMAGE:
