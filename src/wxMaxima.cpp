@@ -2331,6 +2331,24 @@ void wxMaxima::SetupVariables()
              wxT("\")"));
   SendMaxima(wxT(":lisp-quiet (setf $in_netmath nil)"));
   SendMaxima(wxT(":lisp-quiet (setf $show_openplot t)"));
+  Dirstructure dirstruct;
+
+  wxString dir = dirstruct.DataDir();
+  dir.Replace(wxT("\\"),wxT("/"));
+  dir.Replace(wxT("\""),wxT("\\\""));
+  SendMaxima(wxString::Format(wxT(":lisp-quiet (defvar wxmaxima-data-dir \"%s\")"),dir));
+  dir = dirstruct.HelpDir();
+  dir.Replace(wxT("\\"),wxT("/"));
+  dir.Replace(wxT("\""),wxT("\\\""));
+  SendMaxima(wxString::Format(wxT(":lisp-quiet (defvar wxmaxima-help-dir \"%s\")"),dir));
+  dir = dirstruct.ArtDir();
+  dir.Replace(wxT("\\"),wxT("/"));
+  dir.Replace(wxT("\""),wxT("\\\""));
+  SendMaxima(wxString::Format(wxT(":lisp-quiet (defvar wxmaxima-art-dir \"%s\")"),dir));
+  dir = dirstruct.LocaleDir();
+  dir.Replace(wxT("\\"),wxT("/"));
+  dir.Replace(wxT("\""),wxT("\\\""));
+  SendMaxima(wxString::Format(wxT(":lisp-quiet (defvar wxmaxima-locale-dir \"%s\")"),dir));
 
   wxConfigBase *config = wxConfig::Get();
 
