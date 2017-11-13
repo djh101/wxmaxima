@@ -203,10 +203,15 @@ public:
     menu_realpart,
     menu_imagpart,
     menu_subst,
+<<<<<<< HEAD
     menu_jumptoerror,
     menu_math_as_1D_ASCII,
     menu_math_as_2D_ASCII,
     menu_math_as_graphics,
+=======
+    menu_triggerEvaluation,
+    menu_listCreate,
+>>>>>>> 23e5779d7a21a04ff2a128fdfecaaa7d648a8524
     button_factor_id,
     button_solve,
     button_solve_ode,
