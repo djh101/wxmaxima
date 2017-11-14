@@ -917,7 +917,6 @@ void wxMaximaFrame::SetupMenu()
 
   // List menu
   m_listMenu = new wxMenu;
-<<<<<<< HEAD
   wxMenu *listappendSub = new wxMenu;
   listappendSub->Append(menu_list_create_from_elements, _("from elements"),
                         _("Create a list from comma-separated elements"),
@@ -937,13 +936,6 @@ void wxMaximaFrame::SetupMenu()
   m_listMenu->Append(wxNewId(), _("Sort"));
   m_MenuBar->Append(m_listMenu, _("&List"));
   
-=======
-  m_listMenu->Append(menu_listCreate, _("Create list..."),
-                     _("Create a list"),
-                     wxITEM_NORMAL);
-  m_MenuBar->Append(m_listMenu, _("&List"));
-
->>>>>>> 23e5779d7a21a04ff2a128fdfecaaa7d648a8524
   // Plot menu
   m_PlotMenu = new wxMenu;
   m_PlotMenu->Append(gp_plot2, _("Plot &2d..."),

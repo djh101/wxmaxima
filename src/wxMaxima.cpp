@@ -4497,7 +4497,6 @@ void wxMaxima::ListMenu(wxCommandEvent &event)
   wxString cmd;
   switch (event.GetId())
   {
-<<<<<<< HEAD
   case menu_list_create_from_elements:
     break;
   case menu_list_create_from_rule:
@@ -4537,9 +4536,6 @@ void wxMaxima::ListMenu(wxCommandEvent &event)
   case menu_list_append:
     break;
   case menu_list_interleave:
-=======
-  case menu_listCreate:
->>>>>>> 23e5779d7a21a04ff2a128fdfecaaa7d648a8524
     break;
   }
 }
@@ -7344,7 +7340,6 @@ EVT_UPDATE_UI(menu_show_toolbar, wxMaxima::UpdateMenus)
                 EVT_MENU(menu_evaluate_all_visible, wxMaxima::MaximaMenu)
                 EVT_MENU(menu_evaluate_all, wxMaxima::MaximaMenu)
                 EVT_MENU(ToolBar::tb_evaltillhere, wxMaxima::MaximaMenu)
-<<<<<<< HEAD
                 EVT_MENU(menu_list_create_from_elements,wxMaxima::ListMenu)
                 EVT_MENU(menu_list_create_from_rule,wxMaxima::ListMenu)
                 EVT_MENU(menu_list_create_from_list,wxMaxima::ListMenu)
@@ -7365,9 +7360,6 @@ EVT_UPDATE_UI(menu_show_toolbar, wxMaxima::UpdateMenus)
                 EVT_MENU(menu_list_remove_element,wxMaxima::ListMenu)
                 EVT_MENU(menu_list_append,wxMaxima::ListMenu)
                 EVT_MENU(menu_list_interleave,wxMaxima::ListMenu)
-=======
-                EVT_MENU(menu_listCreate,wxMaxima::ListMenu)
->>>>>>> 23e5779d7a21a04ff2a128fdfecaaa7d648a8524
                 EVT_IDLE(wxMaxima::OnIdle)
                 EVT_MENU(menu_remove_output, wxMaxima::EditMenu)
                 EVT_MENU_RANGE(menu_recent_document_0, menu_recent_document_29, wxMaxima::OnRecentDocument)
