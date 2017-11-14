@@ -4533,7 +4533,9 @@ void wxMaxima::ListMenu(wxCommandEvent &event)
     break;
   case menu_list_remove_element:
     break;
-  case menu_list_append:
+  case menu_list_append_item:
+    break;
+  case menu_list_append_list:
     break;
   case menu_list_interleave:
     break;
@@ -7358,7 +7360,8 @@ EVT_UPDATE_UI(menu_show_toolbar, wxMaxima::UpdateMenus)
                 EVT_MENU(menu_list_do_for_each_element,wxMaxima::ListMenu)
                 EVT_MENU(menu_list_remove_duplicates,wxMaxima::ListMenu)
                 EVT_MENU(menu_list_remove_element,wxMaxima::ListMenu)
-                EVT_MENU(menu_list_append,wxMaxima::ListMenu)
+                EVT_MENU(menu_list_append_item,wxMaxima::ListMenu)
+                EVT_MENU(menu_list_append_list,wxMaxima::ListMenu)
                 EVT_MENU(menu_list_interleave,wxMaxima::ListMenu)
                 EVT_IDLE(wxMaxima::OnIdle)
                 EVT_MENU(menu_remove_output, wxMaxima::EditMenu)
